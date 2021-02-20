@@ -1,0 +1,3 @@
+numpy>=1.18.0
+cmake>=3.18.4
+lapsolver>=1.1.0
