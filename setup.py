@@ -1,32 +1,45 @@
-"""Setup script for the package."""
+from setuptools import setup, find_packages
+from glob import glob
 
-import setuptools
-from Cython.Build import cythonize
+# Available at setup time due to pyproject.toml
+from pybind11.setup_helpers import Pybind11Extension, build_ext
+from pybind11 import get_cmake_dir
 
-VERSION = "0.1.0"
+import sys
 
-with open("README.md", "r") as file_object:
-    LONG_DESCRIPTION = file_object.read()
+__version__ = "0.1.0"
 
-SHORT_DESCRIPTION = """
-A simple Python package to compute Diarization Error Rate (DER).
-""".strip()
+# The main interface is through Pybind11Extension.
+# * You can add cxx_std=11/14/17, and then build_ext can be removed.
+# * You can set include_pybind11=false to add the include directory yourself,
+#   say from a submodule.
+#
+# Note:
+#   Sort input source files if you glob sources to ensure bit-for-bit
+#   reproducible builds (https://github.com/pybind/python_example/pull/53)
 
-setuptools.setup(
+ext_modules = [
+    Pybind11Extension(
+        "_spyder",
+        sorted(glob("src/spyder/*.cc")),
+        # Example: passing in the version to the compiled code
+        define_macros=[("VERSION_INFO", __version__)],
+    ),
+]
+
+setup(
     name="spyder",
-    version=VERSION,
+    version=__version__,
     author="Desh Raj",
     author_email="r.desh26@gmail.com",
-    description=SHORT_DESCRIPTION,
-    long_description=LONG_DESCRIPTION,
-    long_description_content_type="text/markdown",
     url="https://github.com/desh2608/spyder",
-    packages=setuptools.find_packages(),
-    ext_modules=cythonize(["*.pyx"]),
+    description="A simple Python package for fast DER computation",
+    long_description="",
+    package_dir={"": "src"},
+    packages=find_packages("spyder"),
+    ext_modules=ext_modules,
+    # Currently, build_ext only provides an optional "highest supported C++
+    # level" feature, but in the future it may provide more features.
+    cmdclass={"build_ext": build_ext},
     zip_safe=False,
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: Apache Software License",
-        "Operating System :: OS Independent",
-    ],
 )
