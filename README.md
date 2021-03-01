@@ -45,6 +45,7 @@ dscore, pyannote.metrics).
 implementation of the Hungarian algorithm, for example, instead of using `scipy`.
 * __Easy-to-use:__ No need to write the reference and hypothesis turns to files and
 read md-eval output with complex regex patterns.
+* __Overlap:__ Spyder supports overlapping speech in reference and hypothesis.
 
 ## TODOs
 
