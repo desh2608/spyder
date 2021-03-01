@@ -86,7 +86,7 @@ bool Token::operator<(const Token &other) const {
     if (timestamp != other.timestamp) {
         return (timestamp < other.timestamp);
     } else {
-        return (spk.compare(other.spk) < 0);
+        return (type.compare(other.type) < 0);
     }
 }
 

@@ -114,23 +114,21 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics) {
     }
     for (int i = 1; i < tokens.size(); ++i) {
         if (tokens[i].timestamp > region_start) {
-            if (tokens[i].system == REF)
-                ref_spk.insert(tokens[i].spk);
-            else
-                hyp_spk.insert(tokens[i].spk);
             if (ref_spk.size() > 0 || hyp_spk.size() > 0)
                 regions.push_back(Region(region_start, tokens[i].timestamp, ref_spk, hyp_spk));
         }
         if (tokens[i].type == START) {
-            if (tokens[i].system == REF)
+            if (tokens[i].system == REF) {
                 ref_spk.insert(tokens[i].spk);
-            else
+            } else {
                 hyp_spk.insert(tokens[i].spk);
+            }
         } else {
-            if (tokens[i].system == REF)
+            if (tokens[i].system == REF) {
                 ref_spk.erase(tokens[i].spk);
-            else
+            } else {
                 hyp_spk.erase(tokens[i].spk);
+            }
         }
         region_start = tokens[i].timestamp;
     }
@@ -142,6 +140,7 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics) {
         N_ref = region.ref_spk.size();
         N_hyp = region.hyp_spk.size();
         N_correct = region.num_correct();
+        // std::cout << "Nref: " << N_ref << " Nhyp: " << N_hyp << " Ncor: " << N_correct << std::endl;
         miss += dur * (std::max(0, N_ref - N_hyp));
         falarm += dur * (std::max(0, N_hyp - N_ref));
         conf += dur * (std::min(N_ref, N_hyp) - N_correct);
