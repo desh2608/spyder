@@ -49,8 +49,9 @@ read md-eval output with complex regex patterns.
 
 ## TODOs
 
-- [] Benchmark speed comparisons with alternatives
-- [] Provide binary for direct use from shell
+ - [x] Add main DER computation function
+ - [ ] Benchmark speed comparisons with alternatives
+ - [ ] Provide binary for direct use from shell
 
 ## Bugs/issues
 
