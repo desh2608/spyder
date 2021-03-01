@@ -31,12 +31,16 @@ namespace spyder {
 
 // The DER metrics: missed speech, false alarm, speaker confusion (error),
 // and diarization error rate (DER).
-typedef struct Metrics {
+class Metrics {
+   public:
     double miss;
     double falarm;
     double conf;
     double der;
-} Metrics;
+    Metrics() {}
+    Metrics(double miss, double falarm, double conf) : miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
+    ~Metrics() {}
+};
 
 // Compute intersection length of two turn tuples.
 // \param A: a Turn tuple
@@ -46,24 +50,25 @@ double compute_intersection_length(Turn A, Turn B);
 // Build cost matrix given reference and hypothesis lists.
 // \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-std::vector<std::vector<double>> build_cost_matrix(TurnList ref, TurnList hyp);
+std::vector<std::vector<double>> build_cost_matrix(TurnList& ref, TurnList& hyp);
 
 // Map reference and hypothesis labels to common space based on assignment
 // vector.
 // \param ref, reference list of turns
 // \param hyp, hypothesis list of turns
 // \param assignment, vector of assignments from ref to hyp
-void map_labels(TurnList ref, TurnList hyp, std::vector<int> assignment);
+void map_labels(TurnList& ref, TurnList& hyp, std::vector<int> assignment);
 
 // Compute diarization error rate with mapped turn lists.
 // \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-Metrics compute_der_mapped(TurnList ref, TurnList hyp);
+void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics);
 
 // Compute diarization error rate. First the lists are mapped to a common
 // label space using the Hungarian algorithm.// \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-Metrics compute_der(TurnList ref, TurnList hyp);
+Metrics compute_der(TurnList& ref, TurnList& hyp);
+
 }  // end namespace spyder
 
 #endif

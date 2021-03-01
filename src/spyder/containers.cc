@@ -25,7 +25,9 @@
 
 #include "containers.h"
 
+#include <iostream>
 #include <map>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -50,7 +52,7 @@ TurnList::TurnList(std::vector<Turn> turns_list) {
 
 TurnList::~TurnList() {
     std::vector<Turn>().swap(turns);
-    std::unordered_set<std::string>().swap(speaker_set);
+    std::set<std::string>().swap(speaker_set);
 }
 
 void TurnList::build_speaker_index() {
@@ -71,7 +73,7 @@ int TurnList::size() {
     return turns.size();
 }
 
-void TurnList::map_labels(std::map<std::string, std::string> label_map) {
+void TurnList::map_labels(std::map<std::string, std::string> &label_map) {
     std::string old_label, new_label;
     for (auto &turn : turns) {
         old_label = turn.spk;

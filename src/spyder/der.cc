@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <unordered_set>
 #include <vector>
 
@@ -40,9 +41,7 @@ double compute_intersection_length(Turn A, Turn B) {
     return std::max(0.0, min_end - max_start);
 }
 
-std::vector<std::vector<double>> build_cost_matrix(TurnList ref, TurnList hyp) {
-    ref.build_speaker_index();
-    hyp.build_speaker_index();
+std::vector<std::vector<double>> build_cost_matrix(TurnList& ref, TurnList& hyp) {
     int M = ref.forward_index.size();
     int N = hyp.forward_index.size();
     std::vector<std::vector<double>> cost_matrix(M, std::vector<double>(N));
@@ -52,17 +51,17 @@ std::vector<std::vector<double>> build_cost_matrix(TurnList ref, TurnList hyp) {
         for (auto& hyp_turn : hyp.turns) {
             i = ref.forward_index.find(ref_turn.spk)->second;
             j = hyp.forward_index.find(hyp_turn.spk)->second;
-            cost_matrix[i][j] += compute_intersection_length(ref_turn, hyp_turn);
+            cost_matrix[i][j] -= compute_intersection_length(ref_turn, hyp_turn);
         }
     }
     return cost_matrix;
 }
 
-void map_labels(TurnList ref, TurnList hyp, std::vector<int> assignment) {
+void map_labels(TurnList& ref, TurnList& hyp, std::vector<int> assignment) {
     int k = 0;
     std::map<std::string, std::string> ref_map, hyp_map;
-    std::unordered_set<std::string> ref_spk_remaining = ref.speaker_set;
-    std::unordered_set<std::string> hyp_spk_remaining = hyp.speaker_set;
+    std::set<std::string> ref_spk_remaining = ref.speaker_set;
+    std::set<std::string> hyp_spk_remaining = hyp.speaker_set;
     std::string ref_spk, hyp_spk;
     for (int i = 0; i < assignment.size(); ++i) {
         if (assignment[i] != -1) {
@@ -71,8 +70,8 @@ void map_labels(TurnList ref, TurnList hyp, std::vector<int> assignment) {
             ref_map.insert(std::pair<std::string, std::string>(ref_spk, std::to_string(k)));
             hyp_map.insert(std::pair<std::string, std::string>(hyp_spk, std::to_string(k)));
             k += 1;
-            ref_spk_remaining.erase(ref_spk_remaining.find(ref_spk), ref_spk_remaining.end());
-            hyp_spk_remaining.erase(hyp_spk_remaining.find(hyp_spk), hyp_spk_remaining.end());
+            ref_spk_remaining.erase(ref_spk);
+            hyp_spk_remaining.erase(hyp_spk);
         }
     }
     for (auto& spk : ref_spk_remaining) {
@@ -88,7 +87,7 @@ void map_labels(TurnList ref, TurnList hyp, std::vector<int> assignment) {
     hyp_map.clear();
 }
 
-Metrics compute_der_mapped(TurnList ref, TurnList hyp) {
+void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics) {
     // Create a list of tokens combining reference and hypothesis
     std::vector<Token> tokens(2 * (ref.size() + hyp.size()));
     int i = -1;
@@ -100,12 +99,10 @@ Metrics compute_der_mapped(TurnList ref, TurnList hyp) {
         tokens[++i] = Token(START, HYP, turn.spk, turn.start);
         tokens[++i] = Token(END, HYP, turn.spk, turn.end);
     }
-
     // Sort the tokens. They will be sorted first by timestamp and then
     // by type (i.e. "end" tokens before "start"), since we overloaded
     // the Token "<" (less than) operator.
     std::sort(tokens.begin(), tokens.end());
-
     // Create list of homogeneous speaker regions from tokens
     std::vector<Region> regions;
     double region_start = tokens[0].timestamp;
@@ -131,13 +128,12 @@ Metrics compute_der_mapped(TurnList ref, TurnList hyp) {
                 hyp_spk.insert(tokens[i].spk);
         } else {
             if (tokens[i].system == REF)
-                ref_spk.erase(ref_spk.find(tokens[i].spk), ref_spk.end());
+                ref_spk.erase(tokens[i].spk);
             else
-                hyp_spk.erase(hyp_spk.find(tokens[i].spk), hyp_spk.end());
+                hyp_spk.erase(tokens[i].spk);
         }
         region_start = tokens[i].timestamp;
     }
-
     // compute DER metrics
     double miss = 0, falarm = 0, conf = 0, total_dur = 0, dur;
     int N_ref, N_hyp, N_correct;
@@ -154,25 +150,24 @@ Metrics compute_der_mapped(TurnList ref, TurnList hyp) {
     // free up memory
     std::vector<Token>().swap(tokens);
     std::vector<Region>().swap(regions);
-
-    miss /= total_dur;
-    falarm /= total_dur;
-    conf /= total_dur;
-    double der = miss + falarm + conf;
-    Metrics metrics = {miss, falarm, conf, der};
-    return metrics;
+    metrics.miss = miss / total_dur;
+    metrics.falarm = falarm / total_dur;
+    metrics.conf = conf / total_dur;
+    metrics.der = (miss + falarm + conf) / total_dur;
+    return;
 }
 
-Metrics compute_der(TurnList ref, TurnList hyp) {
+Metrics compute_der(TurnList& ref, TurnList& hyp) {
+    ref.build_speaker_index();
+    hyp.build_speaker_index();
     std::vector<std::vector<double>> cost_matrix = build_cost_matrix(ref, hyp);
     HungarianAlgorithm hungarian_solver;
     std::vector<int> assignment;
     double cost = hungarian_solver.Solve(cost_matrix, assignment);
     map_labels(ref, hyp, assignment);
-    Metrics metric = compute_der_mapped(ref, hyp);
-    ref.~TurnList();
-    hyp.~TurnList();
-    return metric;
+    Metrics metrics;
+    compute_der_mapped(ref, hyp, metrics);
+    return metrics;
 }
 
 }  // end namespace spyder

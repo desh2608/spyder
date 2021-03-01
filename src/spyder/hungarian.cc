@@ -65,15 +65,12 @@ void HungarianAlgorithm::assignmentoptimal(int *assignment, double *cost, double
         assignment[row] = -1;
 
     /* generate working copy of distance Matrix */
-    /* check if all matrix elements are positive */
     nOfElements = nOfRows * nOfColumns;
     distMatrix = (double *)malloc(nOfElements * sizeof(double));
     distMatrixEnd = distMatrix + nOfElements;
 
     for (row = 0; row < nOfElements; row++) {
         value = distMatrixIn[row];
-        if (value < 0)
-            std::cerr << "All matrix elements have to be non-negative." << std::endl;
         distMatrix[row] = value;
     }
 
@@ -104,7 +101,6 @@ void HungarianAlgorithm::assignmentoptimal(int *assignment, double *cost, double
             distMatrixTemp = distMatrix + row;
             while (distMatrixTemp < distMatrixEnd) {
                 *distMatrixTemp -= minValue;
-                *distMatrixTemp *= -1;  // make the costs negative, since we want to maximize
                 distMatrixTemp += nOfRows;
             }
         }
@@ -137,8 +133,7 @@ void HungarianAlgorithm::assignmentoptimal(int *assignment, double *cost, double
             /* subtract the smallest element from each element of the column */
             distMatrixTemp = distMatrix + nOfRows * col;
             while (distMatrixTemp < columnEnd) {
-                *distMatrixTemp -= minValue;
-                *distMatrixTemp++ *= -1;  // make the costs negative, since we want to maximize
+                *distMatrixTemp++ -= minValue;
             }
         }
 

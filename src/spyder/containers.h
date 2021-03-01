@@ -24,6 +24,7 @@
 #define SPYDER_CONTAINERS_H
 
 #include <map>
+#include <set>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -56,7 +57,7 @@ class TurnList {
     std::vector<Turn> turns;
 
     // speaker set in the list of turns
-    std::unordered_set<std::string> speaker_set;
+    std::set<std::string> speaker_set;
 
     // forward index mapping speakers to integers
     std::map<std::string, int> forward_index;
@@ -77,7 +78,7 @@ class TurnList {
 
     // map speaker labels using provided mapping
     // \param label_map, a mapping from old label to new label
-    void map_labels(std::map<std::string, std::string> label_map);
+    void map_labels(std::map<std::string, std::string> &label_map);
 };
 
 // Denotes a timestamp (or boundary marker).
