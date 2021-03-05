@@ -27,6 +27,8 @@ ext_modules = [
     ),
 ]
 
+install_requires = ["click>=7.0.0"]
+
 setup(
     name="spyder",
     version=__version__,
@@ -42,4 +44,6 @@ setup(
     # level" feature, but in the future it may provide more features.
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
+    install_requires=install_requires,
+    entry_points={"console_scripts": ["spyder=spyder.der:compute_der_from_rttm"]},
 )
