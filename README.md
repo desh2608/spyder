@@ -37,6 +37,29 @@ print (f"{metrics.miss:.3f}, {metrics.falarm:.3f}, {metrics.conf:3f}, {metrics.d
 # 0.098, 0.216, 0.254902, 0.569
 ```
 
+Alternatively, __spyder__ can also be invoked from the command line to compute the per-file
+and average DERs between reference and hypothesis RTTMs.
+
+```shell
+Usage: spyder [OPTIONS] REF_RTTM HYP_RTTM
+
+Options:
+  --per-file  If this flag is set, print per file results.  [default: False]
+  --help      Show this message and exit.
+```
+
+Example:
+
+```shell
+> spyder ref_rttm hyp_rttm
+Average error rates:
+----------------------------------------------------
+Missed speaker time = 11.48
+False alarm speaker time = 2.27
+Speaker error time = 9.81
+Diarization error rate (DER) = 23.56
+```
+
 ## Why spyder?
 
 * __Fast:__ Implemented in pure C++, and faster than the alternatives (md-eval.pl,
@@ -50,8 +73,9 @@ read md-eval output with complex regex patterns.
 ## TODOs
 
  - [x] Add main DER computation function
- - [ ] Benchmark speed comparisons with alternatives
- - [ ] Provide binary for direct use from shell
+ - [x] Benchmark speed comparisons with alternatives
+ - [x] Provide binary for direct use from shell
+ - [ ] Computing other diarization metrics
 
 ## Bugs/issues
 
