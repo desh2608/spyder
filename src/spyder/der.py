@@ -81,7 +81,7 @@ def compute_der_from_rttm(ref_rttm, hyp_rttm, per_file=False):
     der = miss + falarm + conf
     print("Average error rates:")
     print("----------------------------------------------------")
-    print(f"Missed speaker time = {100*miss:.2f}")
-    print(f"False alarm speaker time = {100*falarm:.2f}")
-    print(f"Speaker error time = {100*conf:.2f}")
-    print(f"Diarization error rate (DER) = {100*der:.2f}")
+    print(f"Missed speaker time = {miss:.2%}")
+    print(f"False alarm speaker time = {falarm:.2%}")
+    print(f"Speaker error time = {conf:.2%}")
+    print(f"Diarization error rate (DER) = {der:.2%}")
