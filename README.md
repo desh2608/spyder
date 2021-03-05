@@ -5,10 +5,14 @@ A simple Python package for fast DER computation.
 ## Installation
 
 ```shell
-python -m pip install -e .
+pip install spy-der
 ```
 
-**Note:** **spyder** will soon be made available for installation from the PyPi repository. Stay tuned!
+For development, clone this repository and run:
+
+```shell
+pip install --editable .
+```
 
 ## Usage
 
@@ -28,13 +32,10 @@ hyp = [("1", 0.0, 0.8),
 
 metrics = spyder.DER(ref, hyp)
 print(metrics)
-# Missed speech: 0.098 
-# False alarm: 0.216 
-# Speaker error: 0.255 
-# DER: 0.569
+# DERMetrics(miss=0.098,falarm=0.216,conf=0.255,der=0.569) 
 
 print (f"{metrics.miss:.3f}, {metrics.falarm:.3f}, {metrics.conf:3f}, {metrics.der:.3f}")
-# 0.098, 0.216, 0.254902, 0.569
+# 0.098, 0.216, 0.254, 0.569
 ```
 
 Alternatively, __spyder__ can also be invoked from the command line to compute the per-file

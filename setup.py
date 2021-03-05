@@ -27,18 +27,21 @@ ext_modules = [
     ),
 ]
 
+long_description = open("README.md").read()
+
 install_requires = ["click>=7.0.0"]
 
 setup(
-    name="spyder",
+    name="spy-der",
     version=__version__,
     author="Desh Raj",
     author_email="r.desh26@gmail.com",
     url="https://github.com/desh2608/spyder",
     description="A simple Python package for fast DER computation",
-    long_description="",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     package_dir={"": "src"},
-    packages=find_packages("spyder"),
+    packages=find_packages("src"),
     ext_modules=ext_modules,
     # Currently, build_ext only provides an optional "highest supported C++
     # level" feature, but in the future it may provide more features.
