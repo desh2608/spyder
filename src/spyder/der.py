@@ -10,10 +10,11 @@ class DERMetrics:
 
     def __repr__(self):
         return (
-            f"Missed speech: {self.miss:.3f} \n"
-            f"False alarm: {self.falarm:.3f} \n"
-            f"Speaker error: {self.conf:.3f} \n"
-            f"DER: {self.der:.3f}"
+            "DERMetrics("
+            f"miss={100*self.miss:.2f},"
+            f"falarm={100*self.falarm:.2f},"
+            f"conf={100*self.conf:.2f},"
+            f"der={100*self.der:.2f})"
         )
 
 

@@ -31,6 +31,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "float.h"
 #include "hungarian.h"
 
 namespace spyder {
@@ -106,45 +107,44 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics) {
     // Create list of homogeneous speaker regions from tokens
     std::vector<Region> regions;
     double region_start = tokens[0].timestamp;
-    std::unordered_set<std::string> ref_spk, hyp_spk;
+    std::vector<std::string> ref_spk, hyp_spk;
     if (tokens[0].system == REF) {
-        ref_spk.insert(tokens[0].spk);
+        ref_spk.push_back(tokens[0].spk);
     } else {
-        hyp_spk.insert(tokens[0].spk);
+        hyp_spk.push_back(tokens[0].spk);
     }
     for (int i = 1; i < tokens.size(); ++i) {
-        if (tokens[i].timestamp > region_start) {
-            if (ref_spk.size() > 0 || hyp_spk.size() > 0)
-                regions.push_back(Region(region_start, tokens[i].timestamp, ref_spk, hyp_spk));
+        if (tokens[i].timestamp - region_start > DBL_EPSILON) {
+            regions.push_back(Region(region_start, tokens[i].timestamp, ref_spk, hyp_spk));
         }
         if (tokens[i].type == START) {
             if (tokens[i].system == REF) {
-                ref_spk.insert(tokens[i].spk);
+                ref_spk.push_back(tokens[i].spk);
             } else {
-                hyp_spk.insert(tokens[i].spk);
+                hyp_spk.push_back(tokens[i].spk);
             }
         } else {
             if (tokens[i].system == REF) {
-                ref_spk.erase(tokens[i].spk);
+                ref_spk.erase(std::find(ref_spk.begin(), ref_spk.end(), tokens[i].spk));
             } else {
-                hyp_spk.erase(tokens[i].spk);
+                hyp_spk.erase(std::find(hyp_spk.begin(), hyp_spk.end(), tokens[i].spk));
             }
         }
         region_start = tokens[i].timestamp;
     }
     // compute DER metrics
-    double miss = 0, falarm = 0, conf = 0, total_dur = 0, dur;
+    double miss = 0, falarm = 0, conf = 0, total_dur = 0, scored_dur = 0, dur;
     int N_ref, N_hyp, N_correct;
     for (auto& region : regions) {
         dur = region.duration();
         N_ref = region.ref_spk.size();
         N_hyp = region.hyp_spk.size();
         N_correct = region.num_correct();
-        // std::cout << "Nref: " << N_ref << " Nhyp: " << N_hyp << " Ncor: " << N_correct << std::endl;
         miss += dur * (std::max(0, N_ref - N_hyp));
         falarm += dur * (std::max(0, N_hyp - N_ref));
         conf += dur * (std::min(N_ref, N_hyp) - N_correct);
         total_dur += dur * N_ref;
+        scored_dur += dur;
     }
     // free up memory
     std::vector<Token>().swap(tokens);

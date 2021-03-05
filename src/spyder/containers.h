@@ -26,7 +26,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 namespace spyder {
@@ -101,9 +100,9 @@ class Region {
    public:
     double start;
     double end;
-    std::unordered_set<std::string> ref_spk;
-    std::unordered_set<std::string> hyp_spk;
-    Region(double start, double end, std::unordered_set<std::string> ref_spk, std::unordered_set<std::string> hyp_spk) : start(start), end(end), ref_spk(ref_spk), hyp_spk(hyp_spk) {}
+    std::vector<std::string> ref_spk;
+    std::vector<std::string> hyp_spk;
+    Region(double start, double end, std::vector<std::string> ref_spk, std::vector<std::string> hyp_spk) : start(start), end(end), ref_spk(ref_spk), hyp_spk(hyp_spk) {}
     ~Region();
 
     // region duration

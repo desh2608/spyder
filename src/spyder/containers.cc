@@ -25,12 +25,15 @@
 
 #include "containers.h"
 
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <map>
 #include <set>
 #include <stdexcept>
 #include <string>
-#include <unordered_set>
+
+#include "float.h"
 
 namespace spyder {
 
@@ -83,7 +86,7 @@ void TurnList::map_labels(std::map<std::string, std::string> &label_map) {
 }
 
 bool Token::operator<(const Token &other) const {
-    if (timestamp != other.timestamp) {
+    if (fabs(timestamp - other.timestamp) > DBL_EPSILON) {
         return (timestamp < other.timestamp);
     } else {
         return (type.compare(other.type) < 0);
@@ -91,8 +94,8 @@ bool Token::operator<(const Token &other) const {
 }
 
 Region::~Region() {
-    std::unordered_set<std::string>().swap(ref_spk);
-    std::unordered_set<std::string>().swap(hyp_spk);
+    std::vector<std::string>().swap(ref_spk);
+    std::vector<std::string>().swap(hyp_spk);
 }
 
 double Region::duration() {
@@ -102,7 +105,7 @@ double Region::duration() {
 int Region::num_correct() {
     int N_correct = 0;
     for (auto &ref : ref_spk) {
-        if (hyp_spk.find(ref) != hyp_spk.end())
+        if (std::find(hyp_spk.begin(), hyp_spk.end(), ref) != hyp_spk.end())
             N_correct++;
     }
     return N_correct;
