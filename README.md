@@ -8,6 +8,12 @@ A simple Python package for fast DER computation.
 pip install spy-der
 ```
 
+To install version with latest features directly from Github:
+
+```shell
+pip install git+https://github.com/desh2608/spyder.git@main
+```
+
 For development, clone this repository and run:
 
 ```shell
