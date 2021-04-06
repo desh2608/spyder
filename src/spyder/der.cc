@@ -138,12 +138,12 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics, std::str
     for (auto& region : regions) {
         dur = region.duration();
         N_ref = region.ref_spk.size();
+        N_hyp = region.hyp_spk.size();
         if (
             !(region_type == "all") &&
             !(region_type == "single" && N_ref <= 1) &&
-            !(region_type == "overlap" && N_ref > 1))
+            !(region_type == "overlap" && (N_ref > 1 || N_hyp > 1)))
             continue;
-        N_hyp = region.hyp_spk.size();
         N_correct = region.num_correct();
         miss += dur * (std::max(0, N_ref - N_hyp));
         falarm += dur * (std::max(0, N_hyp - N_ref));
