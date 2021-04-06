@@ -29,7 +29,7 @@ ext_modules = [
 
 long_description = open("README.md").read()
 
-install_requires = ["click>=7.0.0"]
+install_requires = ["click>=7.0.0", "tabulate>=0.8.9"]
 
 setup(
     name="spy-der",

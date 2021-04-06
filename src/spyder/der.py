@@ -1,6 +1,8 @@
 from _spyder import Turn, TurnList, compute_der
 
 import click
+from tabulate import tabulate
+
 from collections import defaultdict
 
 
@@ -38,7 +40,14 @@ def DER(ref, hyp):
     show_default=True,
     help="If this flag is set, print per file results.",
 )
-def compute_der_from_rttm(ref_rttm, hyp_rttm, per_file=False):
+@click.option(
+    "--skip-missing",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Skip recordings which are missing in hypothesis (i.e., not counted in missed speech).",
+)
+def compute_der_from_rttm(ref_rttm, hyp_rttm, per_file=False, skip_missing=False):
     ref_turns = defaultdict(list)
     hyp_turns = defaultdict(list)
 
@@ -58,30 +67,39 @@ def compute_der_from_rttm(ref_rttm, hyp_rttm, per_file=False):
             end = start + float(parts[4])
             hyp_turns[parts[1]].append((spk, start, end))
 
-    total_duration = 0
-    total_miss = 0
-    total_falarm = 0
-    total_conf = 0
+    all_metrics = []
     for reco_id in ref_turns:
         if reco_id not in hyp_turns:
-            print(f"Recording {reco_id} not present in hypothesis")
-            continue
+            if skip_missing:
+                print(f"Skipping recording {reco_id} since not present in hypothesis")
+                continue
+            else:
+                hyp_turns[reco_id] = []
         metrics = DER(ref_turns[reco_id], hyp_turns[reco_id])
-        if per_file:
-            print(f"{reco_id}: {metrics}")
         duration = sum([turn[2] - turn[1] for turn in ref_turns[reco_id]])
-        total_duration += duration
-        total_miss += duration * metrics.miss
-        total_falarm += duration * metrics.falarm
-        total_conf += duration * metrics.conf
+        all_metrics.append(
+            [reco_id, duration, metrics.miss, metrics.falarm, metrics.conf, metrics.der]
+        )
+
+    print(f"Evaluated {len(all_metrics)} recordings. Results:")
+
+    total_duration = sum([x[1] for x in all_metrics])
+    total_miss = sum([x[1] * x[2] for x in all_metrics])  # duration*miss
+    total_falarm = sum([x[1] * x[3] for x in all_metrics])  # duration*falarm
+    total_conf = sum([x[1] * x[4] for x in all_metrics])  # duration*conf
 
     miss = total_miss / total_duration
     falarm = total_falarm / total_duration
     conf = total_conf / total_duration
     der = miss + falarm + conf
-    print("Average error rates:")
-    print("----------------------------------------------------")
-    print(f"Missed speaker time = {miss:.2%}")
-    print(f"False alarm speaker time = {falarm:.2%}")
-    print(f"Speaker error time = {conf:.2%}")
-    print(f"Diarization error rate (DER) = {der:.2%}")
+    all_metrics.append(["Overall", total_duration, miss, falarm, conf, der])
+
+    selected_metrics = all_metrics if per_file else [all_metrics[-1]]
+    print(
+        tabulate(
+            selected_metrics,
+            headers=["Recording", "Duration (s)", "Miss.", "F.Alarm.", "Conf.", "DER",],
+            tablefmt="fancy_grid",
+            floatfmt=[None, ".2f", ".2%", ".2%", ".2%", ".2%"],
+        )
+    )

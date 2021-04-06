@@ -45,38 +45,38 @@ and average DERs between reference and hypothesis RTTMs.
 Usage: spyder [OPTIONS] REF_RTTM HYP_RTTM
 
 Options:
-  --per-file  If this flag is set, print per file results.  [default: False]
-  --help      Show this message and exit.
+  --per-file      If this flag is set, print per file results.  [default:
+                  False]
+
+  --skip-missing  Skip recordings which are missing in hypothesis (i.e., not
+                  counted in missed speech).  [default: False]
+
+  --help          Show this message and exit.
 ```
 
 Example:
 
 ```shell
 > spyder ref_rttm hyp_rttm
-Average error rates:
-----------------------------------------------------
-Missed speaker time = 11.48
-False alarm speaker time = 2.27
-Speaker error time = 9.81
-Diarization error rate (DER) = 23.56
+Evaluated 16 recordings. Results:
+╒═════════════╤════════════════╤═════════╤════════════╤═════════╤════════╕
+│ Recording   │   Duration (s) │   Miss. │   F.Alarm. │   Conf. │    DER │
+╞═════════════╪════════════════╪═════════╪════════════╪═════════╪════════╡
+│ Overall     │       33952.95 │  11.48% │      2.27% │   9.81% │ 23.56% │
+╘═════════════╧════════════════╧═════════╧════════════╧═════════╧════════╛
 ```
 
 ## Why spyder?
 
 * __Fast:__ Implemented in pure C++, and faster than the alternatives (md-eval.pl,
-dscore, pyannote.metrics).
+dscore, pyannote.metrics). See this [benchmark](https://desh2608.github.io/2021-03-05-spyder/) 
+for comparisons with other tools.
 * __Stand-alone:__ It has no dependency on any other library. We have our own 
 implementation of the Hungarian algorithm, for example, instead of using `scipy`.
 * __Easy-to-use:__ No need to write the reference and hypothesis turns to files and
 read md-eval output with complex regex patterns.
 * __Overlap:__ Spyder supports overlapping speech in reference and hypothesis.
 
-## TODOs
-
- - [x] Add main DER computation function
- - [x] Benchmark speed comparisons with alternatives
- - [x] Provide binary for direct use from shell
- - [ ] Computing other diarization metrics
 
 ## Bugs/issues
 
