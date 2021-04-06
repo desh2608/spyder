@@ -33,12 +33,13 @@ namespace spyder {
 // and diarization error rate (DER).
 class Metrics {
    public:
+    double duration;
     double miss;
     double falarm;
     double conf;
     double der;
     Metrics() {}
-    Metrics(double miss, double falarm, double conf) : miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
+    Metrics(double duration, double miss, double falarm, double conf) : duration(duration), miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
     ~Metrics() {}
 };
 

@@ -8,6 +8,7 @@ from collections import defaultdict
 
 class DERMetrics:
     def __init__(self, metrics):
+        self.duration = metrics.duration
         self.miss = metrics.miss
         self.falarm = metrics.falarm
         self.conf = metrics.conf
@@ -16,10 +17,11 @@ class DERMetrics:
     def __repr__(self):
         return (
             "DERMetrics("
-            f"miss={100*self.miss:.2f},"
-            f"falarm={100*self.falarm:.2f},"
-            f"conf={100*self.conf:.2f},"
-            f"der={100*self.der:.2f})"
+            f"duration={self.duration:.2f},"
+            f"miss={self.miss:.2%},"
+            f"falarm={self.falarm:.2%},"
+            f"conf={self.conf:.2%},"
+            f"der={self.der:.2%})"
         )
 
 
@@ -86,9 +88,15 @@ def compute_der_from_rttm(
             else:
                 hyp_turns[reco_id] = []
         metrics = DER(ref_turns[reco_id], hyp_turns[reco_id], regions=regions)
-        duration = sum([turn[2] - turn[1] for turn in ref_turns[reco_id]])
         all_metrics.append(
-            [reco_id, duration, metrics.miss, metrics.falarm, metrics.conf, metrics.der]
+            [
+                reco_id,
+                metrics.duration,
+                metrics.miss,
+                metrics.falarm,
+                metrics.conf,
+                metrics.der,
+            ]
         )
 
     print(f"Evaluated {len(all_metrics)} recordings on `{regions}` regions. Results:")

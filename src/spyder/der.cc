@@ -154,6 +154,7 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics, std::str
     // free up memory
     std::vector<Token>().swap(tokens);
     std::vector<Region>().swap(regions);
+    metrics.duration = total_dur;
     metrics.miss = miss / total_dur;
     metrics.falarm = falarm / total_dur;
     metrics.conf = conf / total_dur;
