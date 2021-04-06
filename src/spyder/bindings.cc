@@ -53,12 +53,13 @@ PYBIND11_MODULE(_spyder, m) {
             }));
 
     py::class_<spyder::Metrics>(m, "Metrics")
+        .def_readwrite("duration", &spyder::Metrics::duration, py::return_value_policy::copy)
         .def_readwrite("miss", &spyder::Metrics::miss, py::return_value_policy::copy)
         .def_readwrite("falarm", &spyder::Metrics::falarm, py::return_value_policy::copy)
         .def_readwrite("conf", &spyder::Metrics::conf, py::return_value_policy::copy)
         .def_readwrite("der", &spyder::Metrics::der, py::return_value_policy::copy);
 
-    m.def("compute_der", &spyder::compute_der, py::return_value_policy::reference, R"doc(
-        Compute DER metrics
-    )doc");
+    m.def("compute_der", &spyder::compute_der, py::return_value_policy::reference,
+          py::arg("ref"), py::arg("hyp"), py::pos_only(), py::arg("regions") = "all",
+          R"doc(Compute DER metrics)doc");
 }

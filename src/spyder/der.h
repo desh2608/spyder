@@ -33,12 +33,13 @@ namespace spyder {
 // and diarization error rate (DER).
 class Metrics {
    public:
+    double duration;
     double miss;
     double falarm;
     double conf;
     double der;
     Metrics() {}
-    Metrics(double miss, double falarm, double conf) : miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
+    Metrics(double duration, double miss, double falarm, double conf) : duration(duration), miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
     ~Metrics() {}
 };
 
@@ -67,7 +68,7 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics);
 // Compute diarization error rate. First the lists are mapped to a common
 // label space using the Hungarian algorithm.// \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-Metrics compute_der(TurnList& ref, TurnList& hyp);
+Metrics compute_der(TurnList& ref, TurnList& hyp, std::string regions = "all");
 
 }  // end namespace spyder
 

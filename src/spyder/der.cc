@@ -88,7 +88,7 @@ void map_labels(TurnList& ref, TurnList& hyp, std::vector<int> assignment) {
     hyp_map.clear();
 }
 
-void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics) {
+void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics, std::string region_type) {
     // Create a list of tokens combining reference and hypothesis
     std::vector<Token> tokens(2 * (ref.size() + hyp.size()));
     int i = -1;
@@ -139,6 +139,11 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics) {
         dur = region.duration();
         N_ref = region.ref_spk.size();
         N_hyp = region.hyp_spk.size();
+        if (
+            !(region_type == "all") &&
+            !(region_type == "single" && N_ref <= 1) &&
+            !(region_type == "overlap" && (N_ref > 1 || N_hyp > 1)))
+            continue;
         N_correct = region.num_correct();
         miss += dur * (std::max(0, N_ref - N_hyp));
         falarm += dur * (std::max(0, N_hyp - N_ref));
@@ -149,6 +154,7 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics) {
     // free up memory
     std::vector<Token>().swap(tokens);
     std::vector<Region>().swap(regions);
+    metrics.duration = total_dur;
     metrics.miss = miss / total_dur;
     metrics.falarm = falarm / total_dur;
     metrics.conf = conf / total_dur;
@@ -156,7 +162,7 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics) {
     return;
 }
 
-Metrics compute_der(TurnList& ref, TurnList& hyp) {
+Metrics compute_der(TurnList& ref, TurnList& hyp, std::string regions) {
     ref.build_speaker_index();
     hyp.build_speaker_index();
     std::vector<std::vector<double>> cost_matrix = build_cost_matrix(ref, hyp);
@@ -165,7 +171,7 @@ Metrics compute_der(TurnList& ref, TurnList& hyp) {
     double cost = hungarian_solver.Solve(cost_matrix, assignment);
     map_labels(ref, hyp, assignment);
     Metrics metrics;
-    compute_der_mapped(ref, hyp, metrics);
+    compute_der_mapped(ref, hyp, metrics, regions);
     return metrics;
 }
 
