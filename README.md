@@ -77,7 +77,6 @@ Evaluated 16 recordings on `all` regions. Results:
 
 > spyder ref_rttm hyp_rttm --regions single --per-file
 Evaluated 16 recordings on `single` regions. Results:
-Evaluated 16 recordings on `single` regions. Results:
 ╒═════════════════════╤════════════════╤═════════╤════════════╤═════════╤════════╕
 │ Recording           │   Duration (s) │   Miss. │   F.Alarm. │   Conf. │    DER │
 ╞═════════════════════╪════════════════╪═════════╪════════════╪═════════╪════════╡
