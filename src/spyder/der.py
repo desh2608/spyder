@@ -23,10 +23,10 @@ class DERMetrics:
         )
 
 
-def DER(ref, hyp):
+def DER(ref, hyp, regions="all"):
     ref_turns = TurnList([Turn(turn[0], turn[1], turn[2]) for turn in ref])
     hyp_turns = TurnList([Turn(turn[0], turn[1], turn[2]) for turn in hyp])
-    metrics = DERMetrics(compute_der(ref_turns, hyp_turns))
+    metrics = DERMetrics(compute_der(ref_turns, hyp_turns, regions=regions))
     return metrics
 
 
@@ -47,7 +47,17 @@ def DER(ref, hyp):
     show_default=True,
     help="Skip recordings which are missing in hypothesis (i.e., not counted in missed speech).",
 )
-def compute_der_from_rttm(ref_rttm, hyp_rttm, per_file=False, skip_missing=False):
+@click.option(
+    "--regions",
+    type=click.Choice(["all", "single", "overlap"]),
+    default="all",
+    show_default=True,
+    help="Only evaluate on the selected region type. For example, if `single` is selected, "
+    "all overlapping regions are ignored for evaluation.",
+)
+def compute_der_from_rttm(
+    ref_rttm, hyp_rttm, per_file=False, skip_missing=False, regions="all"
+):
     ref_turns = defaultdict(list)
     hyp_turns = defaultdict(list)
 
@@ -75,13 +85,13 @@ def compute_der_from_rttm(ref_rttm, hyp_rttm, per_file=False, skip_missing=False
                 continue
             else:
                 hyp_turns[reco_id] = []
-        metrics = DER(ref_turns[reco_id], hyp_turns[reco_id])
+        metrics = DER(ref_turns[reco_id], hyp_turns[reco_id], regions=regions)
         duration = sum([turn[2] - turn[1] for turn in ref_turns[reco_id]])
         all_metrics.append(
             [reco_id, duration, metrics.miss, metrics.falarm, metrics.conf, metrics.der]
         )
 
-    print(f"Evaluated {len(all_metrics)} recordings. Results:")
+    print(f"Evaluated {len(all_metrics)} recordings on `{regions}` regions. Results:")
 
     total_duration = sum([x[1] for x in all_metrics])
     total_miss = sum([x[1] * x[2] for x in all_metrics])  # duration*miss
