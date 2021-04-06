@@ -32,7 +32,7 @@ hyp = [("1", 0.0, 0.8),
 
 metrics = spyder.DER(ref, hyp)
 print(metrics)
-# DERMetrics(duration=5.10miss=9.80%,falarm=21.57%,conf=25.49%,der=56.86%) 
+# DERMetrics(duration=5.10,miss=9.80%,falarm=21.57%,conf=25.49%,der=56.86%) 
 
 print (f"{metrics.miss:.3f}, {metrics.falarm:.3f}, {metrics.conf:3f}, {metrics.der:.3f}")
 # 0.098, 0.216, 0.254, 0.569
