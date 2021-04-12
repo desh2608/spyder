@@ -44,6 +44,8 @@ class Turn {
     double end;
     Turn(std::string spk, double start, double end) : spk(spk), start(start), end(end) {}
     ~Turn() {}
+    // Overload less than operator to enable sorting on start time
+    bool operator<(const Turn& other) const;
 };
 
 class TurnList {
@@ -65,7 +67,12 @@ class TurnList {
     std::map<int, std::string> reverse_index;
 
     TurnList(std::vector<Turn> turns);
+    TurnList(TurnList tl, std::string spk);  // select a single speaker from TurnList
+    TurnList();
     ~TurnList();
+
+    // Build set of speakers.
+    void build_speaker_set();
 
     // Build index of speakers. Each speaker is mapped to a natural number, i.e.,
     // 0,1,2,.. and so on. This is needed to build the cost matrix and apply
@@ -77,7 +84,13 @@ class TurnList {
 
     // map speaker labels using provided mapping
     // \param label_map, a mapping from old label to new label
-    void map_labels(std::map<std::string, std::string> &label_map);
+    void map_labels(std::map<std::string, std::string>& label_map);
+
+    // Take union of list with another list and merge overlapping segments
+    TurnList get_union(TurnList& other);
+
+    // Get total duration of list
+    float duration();
 };
 
 // Denotes a timestamp (or boundary marker).
@@ -91,8 +104,10 @@ class Token {
     Token(std::string type, std::string system, std::string spk, double timestamp) : type(type), system(system), spk(spk), timestamp(timestamp) {}
     ~Token() {}
     // Overload less than operator to enable sorting on timestamp and type
-    bool operator<(const Token &other) const;
+    bool operator<(const Token& other) const;
 };
+
+std::vector<Token> get_tokens_from_turns(TurnList& ref, TurnList& hyp);
 
 // Each "region" is a homogeneous segment, i.e., no speaker change happens
 // within a region, in either the reference or the hypothesis.
@@ -111,6 +126,8 @@ class Region {
     // number of correct speakers in region
     int num_correct();
 };
+
+std::vector<Region> get_regions(std::vector<Token> tokens);
 
 }  // end namespace spyder
 

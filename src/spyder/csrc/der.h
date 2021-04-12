@@ -31,16 +31,16 @@ namespace spyder {
 
 // The DER metrics: missed speech, false alarm, speaker confusion (error),
 // and diarization error rate (DER).
-class Metrics {
+class DERMetrics {
    public:
     double duration;
     double miss;
     double falarm;
     double conf;
     double der;
-    Metrics() {}
-    Metrics(double duration, double miss, double falarm, double conf) : duration(duration), miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
-    ~Metrics() {}
+    DERMetrics() {}
+    DERMetrics(double duration, double miss, double falarm, double conf) : duration(duration), miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
+    ~DERMetrics() {}
 };
 
 // Compute intersection length of two turn tuples.
@@ -63,12 +63,12 @@ void map_labels(TurnList& ref, TurnList& hyp, std::vector<int> assignment);
 // Compute diarization error rate with mapped turn lists.
 // \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics);
+void compute_der_mapped(TurnList& ref, TurnList& hyp, DERMetrics& metrics);
 
 // Compute diarization error rate. First the lists are mapped to a common
 // label space using the Hungarian algorithm.// \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-Metrics compute_der(TurnList& ref, TurnList& hyp, std::string regions = "all");
+DERMetrics compute_der(TurnList& ref, TurnList& hyp, std::string regions = "all");
 
 }  // end namespace spyder
 

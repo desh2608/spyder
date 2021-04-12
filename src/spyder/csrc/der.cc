@@ -88,50 +88,14 @@ void map_labels(TurnList& ref, TurnList& hyp, std::vector<int> assignment) {
     hyp_map.clear();
 }
 
-void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics, std::string region_type) {
-    // Create a list of tokens combining reference and hypothesis
-    std::vector<Token> tokens(2 * (ref.size() + hyp.size()));
-    int i = -1;
-    for (auto& turn : ref.turns) {
-        tokens[++i] = Token(START, REF, turn.spk, turn.start);
-        tokens[++i] = Token(END, REF, turn.spk, turn.end);
-    }
-    for (auto& turn : hyp.turns) {
-        tokens[++i] = Token(START, HYP, turn.spk, turn.start);
-        tokens[++i] = Token(END, HYP, turn.spk, turn.end);
-    }
+void compute_der_mapped(TurnList& ref, TurnList& hyp, DERMetrics& metrics, std::string region_type) {
+    std::vector<Token> tokens = get_tokens_from_turns(ref, hyp);
     // Sort the tokens. They will be sorted first by timestamp and then
     // by type (i.e. "end" tokens before "start"), since we overloaded
     // the Token "<" (less than) operator.
     std::sort(tokens.begin(), tokens.end());
     // Create list of homogeneous speaker regions from tokens
-    std::vector<Region> regions;
-    double region_start = tokens[0].timestamp;
-    std::vector<std::string> ref_spk, hyp_spk;
-    if (tokens[0].system == REF) {
-        ref_spk.push_back(tokens[0].spk);
-    } else {
-        hyp_spk.push_back(tokens[0].spk);
-    }
-    for (int i = 1; i < tokens.size(); ++i) {
-        if (tokens[i].timestamp - region_start > DBL_EPSILON) {
-            regions.push_back(Region(region_start, tokens[i].timestamp, ref_spk, hyp_spk));
-        }
-        if (tokens[i].type == START) {
-            if (tokens[i].system == REF) {
-                ref_spk.push_back(tokens[i].spk);
-            } else {
-                hyp_spk.push_back(tokens[i].spk);
-            }
-        } else {
-            if (tokens[i].system == REF) {
-                ref_spk.erase(std::find(ref_spk.begin(), ref_spk.end(), tokens[i].spk));
-            } else {
-                hyp_spk.erase(std::find(hyp_spk.begin(), hyp_spk.end(), tokens[i].spk));
-            }
-        }
-        region_start = tokens[i].timestamp;
-    }
+    std::vector<Region> regions = get_regions(tokens);
     // compute DER metrics
     double miss = 0, falarm = 0, conf = 0, total_dur = 0, scored_dur = 0, dur;
     int N_ref, N_hyp, N_correct;
@@ -162,7 +126,7 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics, std::str
     return;
 }
 
-Metrics compute_der(TurnList& ref, TurnList& hyp, std::string regions) {
+DERMetrics compute_der(TurnList& ref, TurnList& hyp, std::string regions) {
     ref.build_speaker_index();
     hyp.build_speaker_index();
     std::vector<std::vector<double>> cost_matrix = build_cost_matrix(ref, hyp);
@@ -170,7 +134,7 @@ Metrics compute_der(TurnList& ref, TurnList& hyp, std::string regions) {
     std::vector<int> assignment;
     double cost = hungarian_solver.Solve(cost_matrix, assignment);
     map_labels(ref, hyp, assignment);
-    Metrics metrics;
+    DERMetrics metrics;
     compute_der_mapped(ref, hyp, metrics, regions);
     return metrics;
 }

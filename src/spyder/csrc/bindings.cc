@@ -25,6 +25,7 @@
 
 #include "containers.h"
 #include "der.h"
+#include "jer.h"
 
 namespace py = pybind11;
 
@@ -36,7 +37,7 @@ PYBIND11_MODULE(_spyder, m) {
         .. autosummary::
            :toctree: _generate
            
-           compute_der
+           compute_der, compute_jer
     )doc";
 
     py::class_<spyder::Turn>(m, "Turn")
@@ -50,16 +51,27 @@ PYBIND11_MODULE(_spyder, m) {
                     turns.push_back(py::cast<spyder::Turn>(turn));
 
                 return new spyder::TurnList(turns);
+            }))
+        .def(py::init(
+            []() {
+                return new spyder::TurnList();
             }));
 
-    py::class_<spyder::Metrics>(m, "Metrics")
-        .def_readwrite("duration", &spyder::Metrics::duration, py::return_value_policy::copy)
-        .def_readwrite("miss", &spyder::Metrics::miss, py::return_value_policy::copy)
-        .def_readwrite("falarm", &spyder::Metrics::falarm, py::return_value_policy::copy)
-        .def_readwrite("conf", &spyder::Metrics::conf, py::return_value_policy::copy)
-        .def_readwrite("der", &spyder::Metrics::der, py::return_value_policy::copy);
+    py::class_<spyder::DERMetrics>(m, "DERMetrics")
+        .def_readwrite("duration", &spyder::DERMetrics::duration, py::return_value_policy::copy)
+        .def_readwrite("miss", &spyder::DERMetrics::miss, py::return_value_policy::copy)
+        .def_readwrite("falarm", &spyder::DERMetrics::falarm, py::return_value_policy::copy)
+        .def_readwrite("conf", &spyder::DERMetrics::conf, py::return_value_policy::copy)
+        .def_readwrite("der", &spyder::DERMetrics::der, py::return_value_policy::copy);
 
     m.def("compute_der", &spyder::compute_der, py::return_value_policy::reference,
           py::arg("ref"), py::arg("hyp"), py::pos_only(), py::arg("regions") = "all",
           R"doc(Compute DER metrics)doc");
+
+    py::class_<spyder::JERMetrics>(m, "JERMetrics")
+        .def_readwrite("duration", &spyder::JERMetrics::duration, py::return_value_policy::copy)
+        .def_readwrite("jer", &spyder::JERMetrics::jer, py::return_value_policy::copy);
+
+    m.def("compute_jer", &spyder::compute_jer, py::return_value_policy::reference,
+          R"doc(Compute JER metrics)doc");
 }

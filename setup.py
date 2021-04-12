@@ -21,7 +21,7 @@ __version__ = "0.1.0"
 ext_modules = [
     Pybind11Extension(
         "_spyder",
-        sorted(glob("src/spyder/*.cc")),
+        sorted(glob("src/spyder/csrc/*.cc")),
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
     ),
@@ -48,5 +48,10 @@ setup(
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
     install_requires=install_requires,
-    entry_points={"console_scripts": ["spyder=spyder.der:compute_der_from_rttm"]},
+    entry_points={
+        "console_scripts": [
+            "spyder-der=spyder.der:compute_der_from_rttm",
+            "spyder-jer=spyder.jer:compute_jer_from_rttm",
+        ]
+    },
 )
