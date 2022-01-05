@@ -163,6 +163,8 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics, std::str
 }
 
 Metrics compute_der(TurnList& ref, TurnList& hyp, std::string regions) {
+    ref.merge_same_speaker_turns();
+    hyp.merge_same_speaker_turns();
     ref.build_speaker_index();
     hyp.build_speaker_index();
     std::vector<std::vector<double>> cost_matrix = build_cost_matrix(ref, hyp);

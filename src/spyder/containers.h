@@ -38,12 +38,15 @@ const std::string HYP = "hyp";
 
 // Stores speaker turns as provided in the input reference and hypothesis.
 class Turn {
-   public:
-    std::string spk;
-    double start;
-    double end;
-    Turn(std::string spk, double start, double end) : spk(spk), start(start), end(end) {}
-    ~Turn() {}
+    public:
+        std::string spk;
+        double start;
+        double end;
+        Turn(std::string spk, double start, double end) : spk(spk), start(start), end(end) {}
+        ~Turn() {}
+        // Overload less than operator to enable sorting on start time
+        bool operator<(const Turn &other) const;
+
 };
 
 class TurnList {
@@ -66,6 +69,9 @@ class TurnList {
 
     TurnList(std::vector<Turn> turns);
     ~TurnList();
+
+    // Merge overlapping turns from the same speaker in the list of turns.
+    void merge_same_speaker_turns();
 
     // Build index of speakers. Each speaker is mapped to a natural number, i.e.,
     // 0,1,2,.. and so on. This is needed to build the cost matrix and apply

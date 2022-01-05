@@ -24,6 +24,7 @@
 #define SPYDER_CONTAINERS_CC
 
 #include "containers.h"
+#include "GroupBy.h"
 
 #include <algorithm>
 #include <cmath>
@@ -32,10 +33,15 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "float.h"
 
 namespace spyder {
+
+bool Turn::operator<(const Turn &other) const {
+    return start < other.start;
+}
 
 bool TurnList::check_input(std::vector<Turn> turns_list) {
     for (auto &turn : turns_list) {
@@ -56,6 +62,38 @@ TurnList::TurnList(std::vector<Turn> turns_list) {
 TurnList::~TurnList() {
     std::vector<Turn>().swap(turns);
     std::set<std::string>().swap(speaker_set);
+}
+
+void TurnList::merge_same_speaker_turns() {
+    std::vector<Turn> new_turns;
+    // Group the list of turns by speaker
+    std::map< std::string, std::vector<Turn> > const turns_by_speaker = groupBy( turns.begin(), turns.end(), []( Turn const & t ){ return t.spk; } );
+    for (auto &it: turns_by_speaker) {
+        std::vector<Turn> spk_turns = it.second;
+        // Sort the turns by start time
+        std::sort(spk_turns.begin(), spk_turns.end());
+        // Merge overlapping intervals in interval tree
+        std::vector<Turn> merged_turns;
+        double prev_end = -1;
+        for (auto &turn : spk_turns) {
+            if (prev_end < 0) {
+                prev_end = turn.end;
+                merged_turns.push_back(turn);
+            } else {
+                if (turn.start <= prev_end) {
+                    prev_end = std::max(prev_end, turn.end);
+                    merged_turns.back().end = prev_end;
+                } else {
+                    prev_end = turn.end;
+                    merged_turns.push_back(turn);
+                }
+            }
+        }
+        // Add merged turns to new list
+        new_turns.insert(new_turns.end(), merged_turns.begin(), merged_turns.end());
+    }
+    // Replace the old list with the new list
+    turns.swap(new_turns);
 }
 
 void TurnList::build_speaker_index() {
