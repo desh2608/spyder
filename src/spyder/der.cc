@@ -155,10 +155,17 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics, std::str
     std::vector<Token>().swap(tokens);
     std::vector<Region>().swap(regions);
     metrics.duration = total_dur;
-    metrics.miss = miss / total_dur;
-    metrics.falarm = falarm / total_dur;
-    metrics.conf = conf / total_dur;
-    metrics.der = (miss + falarm + conf) / total_dur;
+    if (total_dur == 0) {
+        metrics.miss = 0;
+        metrics.falarm = 0;
+        metrics.conf = 0;
+        metrics.der = 0;
+    } else {
+        metrics.miss = miss / total_dur;
+        metrics.falarm = falarm / total_dur;
+        metrics.conf = conf / total_dur;
+        metrics.der = (miss + falarm + conf) / total_dur;
+    }
     return;
 }
 
