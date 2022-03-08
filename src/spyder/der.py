@@ -51,11 +51,14 @@ def DER(ref, hyp, regions="all"):
 )
 @click.option(
     "--regions",
-    type=click.Choice(["all", "single", "overlap"]),
+    type=click.Choice(["all", "single", "overlap", "nonoverlap"]),
     default="all",
     show_default=True,
-    help="Only evaluate on the selected region type. For example, if `single` is selected, "
-    "all overlapping regions are ignored for evaluation.",
+    help="Only evaluate on the selected region type. Default is all. "
+    " - all: all regions. "
+    " - single: only single-speaker regions (ignore silence and multiple speaker). "
+    " - overlap: only regions with multiple speakers in the reference. "
+    " - nonoverlap: only regions without multiple speakers in the reference.",
 )
 def compute_der_from_rttm(
     ref_rttm, hyp_rttm, per_file=False, skip_missing=False, regions="all"
