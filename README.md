@@ -21,6 +21,7 @@ pip install --editable .
 ```
 
 ## Usage
+### Compute DER for a single pair of reference and hypothesis
 
 ```python
 import spyder
@@ -47,6 +48,52 @@ metrics2 = spyder.DER(ref, hyp, regions="single")
 print(metrics2)
 # DERMetrics(duration=4.10,miss=0.00%,falarm=26.83%,conf=19.51%,der=46.34%)
 ```
+
+### Compute DER for multiple pairs of reference and hypothesis
+
+```python
+import spyder
+
+# for multiple pairs, reference and hypothesis should be lists or dicts
+# if lists, ref and hyp must have same length
+
+# reference (ground truth)
+ref = {"uttr0":[("A", 0.0, 2.0), # (speaker, start, end)
+                ("B", 1.5, 3.5),
+                ("A", 4.0, 5.1)],
+       "uttr2":[("A", 0.0, 4.3), # (speaker, start, end)
+                ("C", 6.0, 8.1),
+                ("B", 2.0, 8.5)]}
+
+# hypothesis (diarization result from your algorithm)
+hyp = {"uttr0":[("1", 0.0, 0.8),
+                ("2", 0.6, 2.3),
+                ("3", 2.1, 3.9),
+                ("1", 3.8, 5.2)],
+       "uttr2":[("1", 0.0, 4.5),
+                ("2", 2.5, 8.7)]}
+
+metrics = spyder.DER(ref, hyp)
+print(metrics)
+# {'Overall': DERMetrics(duration=18.00,miss=17.22%,falarm=8.33%,conf=7.22%,der=32.78%)}
+
+metrics2 = spyder.DER(ref, hyp, per_file=True, verbose=True)  # verbose=True to prints per-file results
+```
+Output:
+```
+Evaluated 2 recordings on `all` regions. Results:
+╒═════════════╤════════════════╤═════════╤════════════╤═════════╤════════╕
+│ Recording   │   Duration (s) │   Miss. │   F.Alarm. │   Conf. │    DER │
+╞═════════════╪════════════════╪═════════╪════════════╪═════════╪════════╡
+│ uttr0       │           5.10 │   9.80% │     21.57% │  25.49% │ 56.86% │
+├─────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
+│ uttr2       │          12.90 │  20.16% │      3.10% │   0.00% │ 23.26% │
+├─────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
+│ Overall     │          18.00 │  17.22% │      8.33% │   7.22% │ 32.78% │
+╘═════════════╧════════════════╧═════════╧════════════╧═════════╧════════╛
+```
+
+### Compute per-file and overall DERs between reference and hypothesis RTTMs using command line tool
 
 Alternatively, __spyder__ can also be invoked from the command line to compute the per-file
 and average DERs between reference and hypothesis RTTMs.
