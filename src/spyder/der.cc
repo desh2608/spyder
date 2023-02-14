@@ -134,7 +134,10 @@ void compute_der_mapped(TurnList &ref, TurnList &hyp, Metrics &metrics,
       if (tokens[i].system == REF) {
         ref_spk.erase(std::find(ref_spk.begin(), ref_spk.end(), tokens[i].spk));
       } else {
-        hyp_spk.erase(std::find(hyp_spk.begin(), hyp_spk.end(), tokens[i].spk));
+        auto it = std::find(hyp_spk.begin(), hyp_spk.end(), tokens[i].spk); 
+        if (it != hyp_spk.end()) { 
+          hyp_spk.erase(it); 
+        }
       }
     }
     region_start = tokens[i].timestamp;
