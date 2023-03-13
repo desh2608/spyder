@@ -39,7 +39,7 @@ hyp = [("1", 0.0, 0.8),
 
 metrics = spyder.DER(ref, hyp)
 print(metrics)
-# DERMetrics(duration=5.10,miss=9.80%,falarm=21.57%,conf=25.49%,der=56.86%) 
+# DERMetrics(duration=5.10,miss=9.80%,falarm=21.57%,conf=25.49%,der=56.86%)
 
 print (f"{metrics.miss:.3f}, {metrics.falarm:.3f}, {metrics.conf:3f}, {metrics.der:.3f}")
 # 0.098, 0.216, 0.254, 0.569
@@ -172,15 +172,26 @@ Evaluated 16 recordings on `single` regions. Results:
 ## Why spyder?
 
 * __Fast:__ Implemented in pure C++, and faster than the alternatives (md-eval.pl,
-dscore, pyannote.metrics). See this [benchmark](https://desh2608.github.io/2021-03-05-spyder/) 
+dscore, pyannote.metrics). See this [benchmark](https://desh2608.github.io/2021-03-05-spyder/)
 for comparisons with other tools.
-* __Stand-alone:__ It has no dependency on any other library. We have our own 
+* __Stand-alone:__ It has no dependency on any other library. We have our own
 implementation of the Hungarian algorithm, for example, instead of using `scipy`.
 * __Easy-to-use:__ No need to write the reference and hypothesis turns to files and
 read md-eval output with complex regex patterns.
 * __Overlap:__ Spyder supports overlapping speech in reference and hypothesis. In addition,
 you can compute metrics on just the single-speaker or overlap regions by passing the
 keyword argument `regions="single"` or `regions="overlap"`, respectively.
+
+
+## Contributing
+
+Contributions for core improvements or new recipes are welcome. Please run the following
+before creating a pull request.
+
+```bash
+pre-commit install
+pre-commit run # Running linter checks
+```
 
 
 ## Bugs/issues
