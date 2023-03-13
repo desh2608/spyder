@@ -53,6 +53,7 @@ PYBIND11_MODULE(_spyder, m) {
             }));
 
     py::class_<spyder::Metrics>(m, "Metrics")
+        .def(py::init<double, double, double, double>())
         .def_readwrite("duration", &spyder::Metrics::duration, py::return_value_policy::copy)
         .def_readwrite("miss", &spyder::Metrics::miss, py::return_value_policy::copy)
         .def_readwrite("falarm", &spyder::Metrics::falarm, py::return_value_policy::copy)

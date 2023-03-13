@@ -1,4 +1,4 @@
-from _spyder import Turn, TurnList, compute_der
+from _spyder import Turn, TurnList, compute_der, Metrics
 
 import click
 from tabulate import tabulate
@@ -9,18 +9,11 @@ import numpy as np
 
 class DERMetrics:
     def __init__(self, metrics):
-        try:
-            self.duration = metrics.duration
-            self.miss = metrics.miss
-            self.falarm = metrics.falarm
-            self.conf = metrics.conf
-            self.der = metrics.der
-        except:
-            self.duration = metrics["duration"]
-            self.miss = metrics["miss"]
-            self.falarm = metrics["falarm"]
-            self.conf = metrics["conf"]
-            self.der = metrics["der"]
+        self.duration = metrics.duration
+        self.miss = metrics.miss
+        self.falarm = metrics.falarm
+        self.conf = metrics.conf
+        self.der = metrics.der
 
     def __repr__(self):
         return (
@@ -87,8 +80,7 @@ def _DER_multi(ref_turns: dict, hyp_turns: dict, per_file=False, skip_missing=Fa
                 floatfmt=[None, ".2f", ".2%", ".2%", ".2%", ".2%"],
             )
         )
-    return {m[0]: DERMetrics(dict(zip(['duration', 'miss', 'falarm', 'conf', 'der'], m[1:])))
-            for m in selected_metrics}
+    return {m[0]: DERMetrics(Metrics(*m[1:-1])) for m in selected_metrics}
 
 
 def DER(ref, hyp, per_file=False, skip_missing=False, regions="all", verbose=False):
