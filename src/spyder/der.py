@@ -37,6 +37,9 @@ def DER(ref, hyp, regions="all"):
 @click.argument("ref_rttm", nargs=1, type=click.Path(exists=True))
 @click.argument("hyp_rttm", nargs=1, type=click.Path(exists=True))
 @click.option(
+    "--uem-file", "-u", type=click.Path(exists=True), help="UEM file (optional)",
+)
+@click.option(
     "--per-file",
     is_flag=True,
     default=False,
@@ -61,8 +64,21 @@ def DER(ref, hyp, regions="all"):
     " - overlap: only regions with multiple speakers in the reference. "
     " - nonoverlap: only regions without multiple speakers in the reference.",
 )
+@click.option(
+    "--collar",
+    "-c",
+    type=float,
+    default=0.0,
+    help="Collar for DER computation. Default is 0.0.",
+)
 def compute_der_from_rttm(
-    ref_rttm, hyp_rttm, per_file=False, skip_missing=False, regions="all",
+    ref_rttm,
+    hyp_rttm,
+    uem=None,
+    per_file=False,
+    skip_missing=False,
+    regions="all",
+    collar=0.0,
 ):
     ref_turns = defaultdict(list)
     hyp_turns = defaultdict(list)
@@ -83,6 +99,15 @@ def compute_der_from_rttm(
             end = start + float(parts[4])
             hyp_turns[parts[1]].append((spk, start, end))
 
+    uem_segments = defaultdict(list)
+    if uem is not None:
+        with open(uem, "r") as f:
+            for line in f:
+                parts = line.strip().split()
+                start = float(parts[2])
+                end = float(parts[3])
+                uem_segments[parts[0]].append((start, end))
+
     all_metrics = []
     for reco_id in ref_turns:
         if reco_id not in hyp_turns:
@@ -91,7 +116,7 @@ def compute_der_from_rttm(
                 continue
             else:
                 hyp_turns[reco_id] = []
-        metrics = DER(ref_turns[reco_id], hyp_turns[reco_id], regions=regions,)
+        metrics = DER(ref_turns[reco_id], hyp_turns[reco_id], regions=regions)
         all_metrics.append(
             [
                 reco_id,
