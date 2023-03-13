@@ -38,7 +38,7 @@ const std::string HYP = "hyp";
 
 // Stores speaker turns as provided in the input reference and hypothesis.
 class Turn {
-public:
+ public:
   std::string spk;
   double start;
   double end;
@@ -50,11 +50,11 @@ public:
 };
 
 class TurnList {
-private:
+ private:
   // check input (used in constructor)
   bool check_input(std::vector<Turn> turns_list);
 
-public:
+ public:
   // list of turns
   std::vector<Turn> turns;
 
@@ -87,7 +87,7 @@ public:
 };
 
 class UemSegment {
-public:
+ public:
   double start;
   double end;
   UemSegment(double start, double end) : start(start), end(end) {}
@@ -97,11 +97,11 @@ public:
 };
 
 class UemList {
-private:
+ private:
   // check input (used in constructor)
   bool check_input(std::vector<UemSegment> uem);
 
-public:
+ public:
   // list of turns
   std::vector<UemSegment> segments;
 
@@ -113,7 +113,7 @@ public:
 
 // Denotes a timestamp (or boundary marker).
 class Token {
-public:
+ public:
   std::string type;
   std::string system;
   std::string spk;
@@ -129,7 +129,7 @@ public:
 // Each "region" is a homogeneous segment, i.e., no speaker change happens
 // within a region, in either the reference or the hypothesis.
 class Region {
-public:
+ public:
   double start;
   double end;
   std::vector<std::string> ref_spk;
@@ -146,6 +146,6 @@ public:
   int num_correct();
 };
 
-} // end namespace spyder
+}  // end namespace spyder
 
 #endif

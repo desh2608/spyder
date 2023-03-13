@@ -35,7 +35,7 @@ PYBIND11_MODULE(_spyder, m) {
         .. currentmodule:: _spyder
         .. autosummary::
            :toctree: _generate
-           
+
            compute_der
     )doc";
 
@@ -47,8 +47,7 @@ PYBIND11_MODULE(_spyder, m) {
     for (auto turn : turns_)
       turns.push_back(py::cast<spyder::Turn>(turn));
 
-    return new spyder::TurnList(turns);
-  }));
+    return new spyder::TurnList(turns); }));
 
   py::class_<spyder::Metrics>(m, "Metrics")
       .def(py::init<double, double, double, double>())

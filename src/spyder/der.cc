@@ -190,6 +190,6 @@ Metrics compute_der(TurnList &ref, TurnList &hyp, std::string regions) {
   return metrics;
 }
 
-} // end namespace spyder
+}  // end namespace spyder
 
 #endif
