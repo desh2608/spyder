@@ -35,7 +35,7 @@ PYBIND11_MODULE(_spyder, m) {
         .. currentmodule:: _spyder
         .. autosummary::
            :toctree: _generate
-           
+
            compute_der
     )doc";
 
