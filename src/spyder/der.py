@@ -1,10 +1,10 @@
-from _spyder import Turn, TurnList, compute_der, Metrics
+from collections import defaultdict
 
 import click
+import numpy as np
 from tabulate import tabulate
 
-from collections import defaultdict
-import numpy as np
+from _spyder import Metrics, Turn, TurnList, compute_der
 
 
 class DERMetrics:
@@ -128,9 +128,6 @@ def DER(ref, hyp, per_file=False, skip_missing=False, regions="all", verbose=Fal
 @click.argument("ref_rttm", nargs=1, type=click.Path(exists=True))
 @click.argument("hyp_rttm", nargs=1, type=click.Path(exists=True))
 @click.option(
-    "--uem-file", "-u", type=click.Path(exists=True), help="UEM file (optional)",
-)
-@click.option(
     "--per-file",
     is_flag=True,
     default=False,
@@ -154,13 +151,6 @@ def DER(ref, hyp, per_file=False, skip_missing=False, regions="all", verbose=Fal
     " - single: only single-speaker regions (ignore silence and multiple speaker). "
     " - overlap: only regions with multiple speakers in the reference. "
     " - nonoverlap: only regions without multiple speakers in the reference.",
-)
-@click.option(
-    "--collar",
-    "-c",
-    type=float,
-    default=0.0,
-    help="Collar for DER computation. Default is 0.0.",
 )
 def compute_der_from_rttm(
     ref_rttm, hyp_rttm, per_file=False, skip_missing=False, regions="all", verbose=True
