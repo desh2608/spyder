@@ -33,14 +33,22 @@ def _DER(ref, hyp, regions="all"):
     return metrics
 
 
-def _DER_multi(ref_turns: dict, hyp_turns: dict, per_file=False, skip_missing=False,
-               regions="all", verbose=True):
+def _DER_multi(
+    ref_turns: dict,
+    hyp_turns: dict,
+    per_file=False,
+    skip_missing=False,
+    regions="all",
+    verbose=True,
+):
     all_metrics = []
     for reco_id in ref_turns:
         if reco_id not in hyp_turns:
             if skip_missing:
                 if verbose:
-                    print(f"Skipping recording {reco_id} since not present in hypothesis")
+                    print(
+                        f"Skipping recording {reco_id} since not present in hypothesis"
+                    )
                 continue
             else:
                 hyp_turns[reco_id] = []
@@ -57,7 +65,9 @@ def _DER_multi(ref_turns: dict, hyp_turns: dict, per_file=False, skip_missing=Fa
         )
 
     if verbose:
-        print(f"Evaluated {len(all_metrics)} recordings on `{regions}` regions. Results:")
+        print(
+            f"Evaluated {len(all_metrics)} recordings on `{regions}` regions. Results:"
+        )
 
     total_duration = sum([x[1] for x in all_metrics])
     total_miss = sum([x[1] * x[2] for x in all_metrics])  # duration*miss
@@ -75,7 +85,14 @@ def _DER_multi(ref_turns: dict, hyp_turns: dict, per_file=False, skip_missing=Fa
         print(
             tabulate(
                 selected_metrics,
-                headers=["Recording", "Duration (s)", "Miss.", "F.Alarm.", "Conf.", "DER", ],
+                headers=[
+                    "Recording",
+                    "Duration (s)",
+                    "Miss.",
+                    "F.Alarm.",
+                    "Conf.",
+                    "DER",
+                ],
                 tablefmt="fancy_grid",
                 floatfmt=[None, ".2f", ".2%", ".2%", ".2%", ".2%"],
             )
@@ -94,7 +111,9 @@ def DER(ref, hyp, per_file=False, skip_missing=False, regions="all", verbose=Fal
         # trun list into dict
         ref_turns = dict(zip(range(len(ref)), ref))
         hyp_turns = dict(zip(range(len(hyp)), hyp))
-        metrics = _DER_multi(ref_turns, hyp_turns, per_file, skip_missing, regions, verbose)
+        metrics = _DER_multi(
+            ref_turns, hyp_turns, per_file, skip_missing, regions, verbose
+        )
     elif np.ndim(ref[-1]) == 1 and np.ndim(hyp[-1]) == 1:
         # only one utterance
         metrics = _DER(ref, hyp, regions)
@@ -108,6 +127,9 @@ def DER(ref, hyp, per_file=False, skip_missing=False, regions="all", verbose=Fal
 @click.command()
 @click.argument("ref_rttm", nargs=1, type=click.Path(exists=True))
 @click.argument("hyp_rttm", nargs=1, type=click.Path(exists=True))
+@click.option(
+    "--uem-file", "-u", type=click.Path(exists=True), help="UEM file (optional)",
+)
 @click.option(
     "--per-file",
     is_flag=True,
@@ -132,6 +154,13 @@ def DER(ref, hyp, per_file=False, skip_missing=False, regions="all", verbose=Fal
     " - single: only single-speaker regions (ignore silence and multiple speaker). "
     " - overlap: only regions with multiple speakers in the reference. "
     " - nonoverlap: only regions without multiple speakers in the reference.",
+)
+@click.option(
+    "--collar",
+    "-c",
+    type=float,
+    default=0.0,
+    help="Collar for DER computation. Default is 0.0.",
 )
 def compute_der_from_rttm(
     ref_rttm, hyp_rttm, per_file=False, skip_missing=False, regions="all", verbose=True
