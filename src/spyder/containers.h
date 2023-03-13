@@ -86,31 +86,6 @@ class TurnList {
   void map_labels(std::map<std::string, std::string> &label_map);
 };
 
-class UemSegment {
- public:
-  double start;
-  double end;
-  UemSegment(double start, double end) : start(start), end(end) {}
-  ~UemSegment() {}
-  // Overload less than operator to enable sorting on start time
-  bool operator<(const UemSegment &other) const;
-};
-
-class UemList {
- private:
-  // check input (used in constructor)
-  bool check_input(std::vector<UemSegment> uem);
-
- public:
-  // list of turns
-  std::vector<UemSegment> segments;
-
-  UemList(std::vector<UemSegment> uem);
-  ~UemList();
-
-  void merge_overlapping_segments();
-};
-
 // Denotes a timestamp (or boundary marker).
 class Token {
  public:

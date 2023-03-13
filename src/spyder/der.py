@@ -26,19 +26,24 @@ class DERMetrics:
         )
 
 
-def _DER(ref, hyp, regions="all"):
+def _DER(ref, hyp, uem, regions="all", collar=0.0):
     ref_turns = TurnList([Turn(turn[0], turn[1], turn[2]) for turn in ref])
     hyp_turns = TurnList([Turn(turn[0], turn[1], turn[2]) for turn in hyp])
-    metrics = DERMetrics(compute_der(ref_turns, hyp_turns, regions=regions))
+    uem_turns = TurnList([Turn("dummy", turn[0], turn[1]) for turn in uem])
+    metrics = DERMetrics(
+        compute_der(ref_turns, hyp_turns, uem_turns, regions=regions, collar=collar)
+    )
     return metrics
 
 
 def _DER_multi(
     ref_turns: dict,
     hyp_turns: dict,
+    uem_turns: dict,
     per_file=False,
     skip_missing=False,
     regions="all",
+    collar=0.0,
     verbose=True,
 ):
     all_metrics = []
@@ -52,7 +57,13 @@ def _DER_multi(
                 continue
             else:
                 hyp_turns[reco_id] = []
-        metrics = _DER(ref_turns[reco_id], hyp_turns[reco_id], regions=regions)
+        metrics = _DER(
+            ref_turns[reco_id],
+            hyp_turns[reco_id],
+            uem_turns[reco_id],
+            regions=regions,
+            collar=collar,
+        )
         all_metrics.append(
             [
                 reco_id,
@@ -100,23 +111,95 @@ def _DER_multi(
     return {m[0]: DERMetrics(Metrics(*m[1:-1])) for m in selected_metrics}
 
 
-def DER(ref, hyp, per_file=False, skip_missing=False, regions="all", verbose=False):
+def get_uem_turns(ref_turns, hyp_turns):
+    """
+    Get UEM turns from ref and hyp turns.
+    `ref_turns` and `hyp_turns` can be either a list of turns or a dict of
+    recording id to list of turns.
+    """
+    if isinstance(ref_turns, list) and isinstance(hyp_turns, list):
+        start = min([t[1] for t in ref_turns + hyp_turns])
+        end = max([t[2] for t in ref_turns + hyp_turns])
+        uem_turns = [(start, end)]
+    else:
+        uem_turns = defaultdict(list)
+        for rec in ref_turns:
+            turns = ref_turns[rec]
+            if rec in hyp_turns:
+                turns.extend(hyp_turns[rec])
+            start = min([t[1] for t in turns])
+            end = max([t[2] for t in turns])
+            uem_turns[rec].append((start, end))
+    return uem_turns
+
+
+def DER(
+    ref,
+    hyp,
+    uem=None,
+    per_file=False,
+    skip_missing=False,
+    regions="all",
+    collar=0.0,
+    verbose=False,
+):
+    """
+    Compute DER between ref and hyp.
+    The following formats are supported for `ref` and `hyp`:
+        - list of tuples: list of turns of single recording
+        - dict: {recording_id: list of turns}
+        - list of ndarrays: list of numpy arrays; each array contains turns of a recording
+
+    Args:
+        ref (dict or list): Reference turns.
+        hyp (dict or list): Hypothesis turns.
+        uem (dict or list): UEM turns. If None, we will use the union of ref and hyp.
+        per_file (bool): If True, return DER for each file. Otherwise, return overall DER.
+        skip_missing (bool): If True, skip missing files in hypothesis from evaluation.
+        regions (str): Regions to evaluate. Possible options are:
+            - 'all': Evaluate on all regions.
+            - 'single': Evaluate on single speaker regions (ignore silence and multiple speaker).
+            - 'overlap': Evaluate on regions with multiple speakers in the reference.
+            - 'nonoverlap': Evaluate on regions without multiple speakers in the reference,
+                i.e. single speaker regions and silence regions.
+        collar (float): Collar size in seconds.
+        verbose (bool): If True, print DER for each file.
+    """
     if isinstance(ref, dict) and isinstance(hyp, dict):
-        metrics = _DER_multi(ref, hyp, per_file, skip_missing, regions, verbose)
+        assert uem is None or isinstance(
+            uem, dict
+        ), "UEM must be dict if ref and hyp are dict"
+        if uem is None:
+            uem = get_uem_turns(ref, hyp)
+        metrics = _DER_multi(
+            ref, hyp, uem, per_file, skip_missing, regions, collar, verbose
+        )
     elif np.ndim(ref[-1]) == 2 and np.ndim(hyp[-1]) == 2:
         # the first dimension is the number of utterances
         # in this case ref and hyp must have same length
         if len(ref) != len(hyp):
             raise ValueError("if ref and hyp are not dict, they must have same length")
-        # trun list into dict
+        # convert list into dict, indexed by utterance index
         ref_turns = dict(zip(range(len(ref)), ref))
         hyp_turns = dict(zip(range(len(hyp)), hyp))
+        if uem is None:
+            uem = get_uem_turns(ref_turns, hyp_turns)
+        else:
+            assert len(uem) == len(ref), "uem must have same length as ref and hyp"
+            uem_turns = dict(zip(range(len(uem)), uem))
         metrics = _DER_multi(
-            ref_turns, hyp_turns, per_file, skip_missing, regions, verbose
+            ref_turns,
+            hyp_turns,
+            uem_turns,
+            per_file,
+            skip_missing,
+            regions,
+            collar,
+            verbose,
         )
     elif np.ndim(ref[-1]) == 1 and np.ndim(hyp[-1]) == 1:
         # only one utterance
-        metrics = _DER(ref, hyp, regions)
+        metrics = _DER(ref, hyp, uem, regions, collar)
         if verbose:
             print(metrics)
     else:
@@ -127,6 +210,13 @@ def DER(ref, hyp, per_file=False, skip_missing=False, regions="all", verbose=Fal
 @click.command()
 @click.argument("ref_rttm", nargs=1, type=click.Path(exists=True))
 @click.argument("hyp_rttm", nargs=1, type=click.Path(exists=True))
+@click.option(
+    "--uem",
+    nargs=1,
+    type=click.Path(exists=True),
+    default=None,
+    help="UEM file (format: <recording_id> <channel> <start> <end>)",
+)
 @click.option(
     "--per-file",
     is_flag=True,
@@ -152,8 +242,22 @@ def DER(ref, hyp, per_file=False, skip_missing=False, regions="all", verbose=Fal
     " - overlap: only regions with multiple speakers in the reference. "
     " - nonoverlap: only regions without multiple speakers in the reference.",
 )
+@click.option(
+    "--collar",
+    type=click.FloatRange(min=0.0),
+    default=0.0,
+    show_default=True,
+    help="Collar size.",
+)
 def compute_der_from_rttm(
-    ref_rttm, hyp_rttm, per_file=False, skip_missing=False, regions="all", verbose=True
+    ref_rttm,
+    hyp_rttm,
+    uem=None,
+    per_file=False,
+    skip_missing=False,
+    regions="all",
+    collar=0.25,
+    verbose=True,
 ):
     ref_turns = defaultdict(list)
     hyp_turns = defaultdict(list)
@@ -174,4 +278,24 @@ def compute_der_from_rttm(
             end = start + float(parts[4])
             hyp_turns[parts[1]].append((spk, start, end))
 
-    _DER_multi(ref_turns, hyp_turns, per_file, skip_missing, regions, verbose)
+    uem_turns = defaultdict(list)
+    if uem is not None:
+        with open(uem, "r") as f:
+            for line in f:
+                parts = line.strip().split()
+                start = float(parts[2])
+                end = float(parts[3])
+                uem_turns[parts[0]].append((start, end))
+    else:
+        uem_turns = get_uem_turns(ref_turns, hyp_turns)
+
+    _DER_multi(
+        ref_turns,
+        hyp_turns,
+        uem_turns,
+        per_file,
+        skip_missing,
+        regions,
+        collar,
+        verbose,
+    )
