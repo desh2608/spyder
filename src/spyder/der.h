@@ -32,15 +32,15 @@ namespace spyder {
 // The DER metrics: missed speech, false alarm, speaker confusion (error),
 // and diarization error rate (DER).
 class Metrics {
-   public:
-    double duration;
-    double miss;
-    double falarm;
-    double conf;
-    double der;
-    Metrics() {}
-    Metrics(double duration, double miss, double falarm, double conf) : duration(duration), miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
-    ~Metrics() {}
+ public:
+  double duration;
+  double miss;
+  double falarm;
+  double conf;
+  double der;
+  Metrics() {}
+  Metrics(double duration, double miss, double falarm, double conf) : duration(duration), miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
+  ~Metrics() {}
 };
 
 // Compute intersection length of two turn tuples.

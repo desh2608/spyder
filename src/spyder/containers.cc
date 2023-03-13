@@ -24,7 +24,6 @@
 #define SPYDER_CONTAINERS_CC
 
 #include "containers.h"
-#include "GroupBy.h"
 
 #include <algorithm>
 #include <cmath>
@@ -35,6 +34,7 @@
 #include <string>
 #include <vector>
 
+#include "GroupBy.h"
 #include "float.h"
 
 namespace spyder {
@@ -144,6 +144,6 @@ int Region::num_correct() {
   return N_correct;
 }
 
-} // end namespace spyder
+}  // end namespace spyder
 
 #endif
