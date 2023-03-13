@@ -9,8 +9,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -29,38 +29,40 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(_spyder, m) {
-    m.doc() = R"doc(
+  m.doc() = R"doc(
         Python module
         -----------------------
         .. currentmodule:: _spyder
         .. autosummary::
            :toctree: _generate
-           
+
            compute_der
     )doc";
 
-    py::class_<spyder::Turn>(m, "Turn")
-        .def(py::init<std::string, double, double>());
+  py::class_<spyder::Turn>(m, "Turn").def(
+      py::init<std::string, double, double>());
 
-    py::class_<spyder::TurnList>(m, "TurnList")
-        .def(py::init(
-            [](py::list turns_) {
-                std::vector<spyder::Turn> turns;
-                for (auto turn : turns_)
-                    turns.push_back(py::cast<spyder::Turn>(turn));
+  py::class_<spyder::TurnList>(m, "TurnList").def(py::init([](py::list turns_) {
+    std::vector<spyder::Turn> turns;
+    for (auto turn : turns_)
+      turns.push_back(py::cast<spyder::Turn>(turn));
 
-                return new spyder::TurnList(turns);
-            }));
+    return new spyder::TurnList(turns); }));
 
-    py::class_<spyder::Metrics>(m, "Metrics")
-        .def(py::init<double, double, double, double>())
-        .def_readwrite("duration", &spyder::Metrics::duration, py::return_value_policy::copy)
-        .def_readwrite("miss", &spyder::Metrics::miss, py::return_value_policy::copy)
-        .def_readwrite("falarm", &spyder::Metrics::falarm, py::return_value_policy::copy)
-        .def_readwrite("conf", &spyder::Metrics::conf, py::return_value_policy::copy)
-        .def_readwrite("der", &spyder::Metrics::der, py::return_value_policy::copy);
+  py::class_<spyder::Metrics>(m, "Metrics")
+      .def(py::init<double, double, double, double>())
+      .def_readwrite("duration", &spyder::Metrics::duration,
+                     py::return_value_policy::copy)
+      .def_readwrite("miss", &spyder::Metrics::miss,
+                     py::return_value_policy::copy)
+      .def_readwrite("falarm", &spyder::Metrics::falarm,
+                     py::return_value_policy::copy)
+      .def_readwrite("conf", &spyder::Metrics::conf,
+                     py::return_value_policy::copy)
+      .def_readwrite("der", &spyder::Metrics::der,
+                     py::return_value_policy::copy);
 
-    m.def("compute_der", &spyder::compute_der, py::return_value_policy::reference,
-          py::arg("ref"), py::arg("hyp"), py::pos_only(), py::arg("regions") = "all",
-          R"doc(Compute DER metrics)doc");
+  m.def("compute_der", &spyder::compute_der, py::return_value_policy::reference,
+        py::arg("ref"), py::arg("hyp"), py::pos_only(),
+        py::arg("regions") = "all", R"doc(Compute DER metrics)doc");
 }
