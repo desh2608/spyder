@@ -26,6 +26,7 @@ class DERMetrics:
 
 
 def DER(ref, hyp, regions="all"):
+    assert regions in ["all", "single", "overlap", "nonoverlap"]
     ref_turns = TurnList([Turn(turn[0], turn[1], turn[2]) for turn in ref])
     hyp_turns = TurnList([Turn(turn[0], turn[1], turn[2]) for turn in hyp])
     metrics = DERMetrics(compute_der(ref_turns, hyp_turns, regions=regions))
@@ -61,7 +62,7 @@ def DER(ref, hyp, regions="all"):
     " - nonoverlap: only regions without multiple speakers in the reference.",
 )
 def compute_der_from_rttm(
-    ref_rttm, hyp_rttm, per_file=False, skip_missing=False, regions="all"
+    ref_rttm, hyp_rttm, per_file=False, skip_missing=False, regions="all",
 ):
     ref_turns = defaultdict(list)
     hyp_turns = defaultdict(list)
@@ -90,7 +91,7 @@ def compute_der_from_rttm(
                 continue
             else:
                 hyp_turns[reco_id] = []
-        metrics = DER(ref_turns[reco_id], hyp_turns[reco_id], regions=regions)
+        metrics = DER(ref_turns[reco_id], hyp_turns[reco_id], regions=regions,)
         all_metrics.append(
             [
                 reco_id,
