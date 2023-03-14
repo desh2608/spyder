@@ -124,9 +124,9 @@ def get_uem_turns(ref_turns, hyp_turns):
     else:
         uem_turns = defaultdict(list)
         for rec in ref_turns:
-            turns = ref_turns[rec]
+            turns = ref_turns[rec][:]
             if rec in hyp_turns:
-                turns.extend(hyp_turns[rec])
+                turns += hyp_turns[rec][:]
             start = min([t[1] for t in turns])
             end = max([t[2] for t in turns])
             uem_turns[rec].append((start, end))
