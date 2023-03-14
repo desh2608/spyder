@@ -256,7 +256,7 @@ def compute_der_from_rttm(
     per_file=False,
     skip_missing=False,
     regions="all",
-    collar=0.25,
+    collar=0.0,
     verbose=True,
 ):
     ref_turns = defaultdict(list)

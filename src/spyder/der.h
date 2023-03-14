@@ -68,7 +68,7 @@ void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics);
 // Compute diarization error rate. First the lists are mapped to a common
 // label space using the Hungarian algorithm.// \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-Metrics compute_der(TurnList& ref, TurnList& hyp, std::string regions = "all");
+Metrics compute_der(TurnList& ref, TurnList& hyp, TurnList& uem, std::string regions = "all", float collar = 0.0);
 
 }  // end namespace spyder
 

@@ -120,53 +120,6 @@ void TurnList::map_labels(std::map<std::string, std::string> &label_map) {
   }
 }
 
-bool UemSegment::operator<(const UemSegment &other) const {
-  return start < other.start;
-}
-
-bool UemList::check_input(std::vector<UemSegment> uem) {
-  for (auto &segment : uem) {
-    if (segment.start > segment.end) {
-      return false;
-    }
-  }
-  return true;
-}
-
-UemList::UemList(std::vector<UemSegment> uem) {
-  if (check_input(uem))
-    segments = uem;
-  else
-    throw std::invalid_argument("start time cannot be greater than end time");
-}
-
-UemList::~UemList() { std::vector<UemSegment>().swap(segments); }
-
-void UemList::merge_overlapping_segments() {
-  std::vector<UemSegment> new_segments;
-  // Sort the segments by start time
-  std::sort(segments.begin(), segments.end());
-  // Merge overlapping segments in interval tree
-  std::vector<UemSegment> merged_segments;
-  double prev_end = -1;
-  for (auto &segment : segments) {
-    if (prev_end < 0) {
-      prev_end = segment.end;
-      merged_segments.push_back(segment);
-    } else {
-      if (segment.start <= prev_end) {
-        prev_end = std::max(prev_end, segment.end);
-        merged_segments.back().end = prev_end;
-      } else {
-        prev_end = segment.end;
-        merged_segments.push_back(segment);
-      }
-    }
-  }
-  // Add merged segments to new list
-  segments.swap(merged_segments);
-}
-
 bool Token::operator<(const Token &other) const {
   if (fabs(timestamp - other.timestamp) > DBL_EPSILON) {
     return (timestamp < other.timestamp);

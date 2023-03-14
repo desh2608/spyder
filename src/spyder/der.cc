@@ -175,9 +175,13 @@ void compute_der_mapped(TurnList &ref, TurnList &hyp, Metrics &metrics,
   return;
 }
 
-Metrics compute_der(TurnList &ref, TurnList &hyp, std::string regions) {
+Metrics compute_der(TurnList &ref, TurnList &hyp, TurnList &uem, std::string regions, float collar) {
+  // First, we merge overlapping segments from the same speaker.
   ref.merge_same_speaker_turns();
   hyp.merge_same_speaker_turns();
+  uem.merge_same_speaker_turns();
+
+  // Next, we map the reference and hypothesis speakers to the same labels.
   ref.build_speaker_index();
   hyp.build_speaker_index();
   std::vector<std::vector<double>> cost_matrix = build_cost_matrix(ref, hyp);
@@ -185,6 +189,8 @@ Metrics compute_der(TurnList &ref, TurnList &hyp, std::string regions) {
   std::vector<int> assignment;
   double cost = hungarian_solver.Solve(cost_matrix, assignment);
   map_labels(ref, hyp, assignment);
+
+  // Finally, we compute the DER metrics.
   Metrics metrics;
   compute_der_mapped(ref, hyp, metrics, regions);
   return metrics;

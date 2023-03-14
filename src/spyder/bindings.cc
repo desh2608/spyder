@@ -63,6 +63,6 @@ PYBIND11_MODULE(_spyder, m) {
                      py::return_value_policy::copy);
 
   m.def("compute_der", &spyder::compute_der, py::return_value_policy::reference,
-        py::arg("ref"), py::arg("hyp"), py::pos_only(),
-        py::arg("regions") = "all", R"doc(Compute DER metrics)doc");
+        py::arg("ref"), py::arg("hyp"), py::arg("uem"), py::pos_only(),
+        py::arg("regions") = "all", py::arg("collar") = 0.0, R"doc(Compute DER metrics)doc");
 }
