@@ -19,8 +19,9 @@ namespace spyder {
 
 template <typename T>
 struct return_type {
-  typedef typename return_type<
-      typename std::decay<decltype(&T::operator())>::type>::type type;
+  typedef
+      typename return_type<typename std::decay<decltype(&T::operator())>::type>::type
+          type;
 };
 
 template <typename R, typename C, typename... A>
@@ -49,9 +50,8 @@ struct GroupBy;
 
 template <typename Arg, typename T, typename... Ts>
 struct GroupBy<Arg, T, Ts...> {
-  typedef std::map<
-      typename spyder::return_type<typename std::decay<T>::type>::type,
-      typename GroupBy<Arg, Ts...>::return_type>
+  typedef std::map<typename spyder::return_type<typename std::decay<T>::type>::type,
+                   typename GroupBy<Arg, Ts...>::return_type>
       return_type;
 };
 
@@ -87,11 +87,10 @@ template <typename Iterator, typename F, typename... Fs>
 typename spyder::GroupBy<typename std::iterator_traits<Iterator>::value_type, F,
                          Fs...>::return_type
 groupBy(Iterator begin, Iterator const end, F &&f, Fs &&...fs) {
-  typename spyder::GroupBy<typename std::iterator_traits<Iterator>::value_type,
-                           F, Fs...>::return_type result;
+  typename spyder::GroupBy<typename std::iterator_traits<Iterator>::value_type, F,
+                           Fs...>::return_type result;
   for (/* empty */; begin != end; ++begin) {
-    spyder::groupByImpl(result, begin, std::forward<F>(f),
-                        std::forward<Fs>(fs)...);
+    spyder::groupByImpl(result, begin, std::forward<F>(f), std::forward<Fs>(fs)...);
   }
 
   return result;

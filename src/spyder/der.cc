@@ -58,7 +58,8 @@ std::vector<Region> get_eval_regions(TurnList &ref, TurnList &hyp, TurnList &uem
   return regions;
 }
 
-std::vector<Region> get_score_regions(TurnList &ref, TurnList &hyp, TurnList &uem, float collar) {
+std::vector<Region> get_score_regions(TurnList &ref, TurnList &hyp, TurnList &uem,
+                                      float collar) {
   // Create a list of tokens combining reference, hypothesis, and UEM segments
   std::vector<Token> tokens(4 * (ref.size() + hyp.size()) + 2 * uem.size());
   int i = -1;
@@ -84,7 +85,8 @@ std::vector<Region> get_score_regions(TurnList &ref, TurnList &hyp, TurnList &ue
   return regions;
 }
 
-void compute_der_mapped(std::vector<Region> &score_regions, Metrics &metrics, std::string region_type) {
+void compute_der_mapped(std::vector<Region> &score_regions, Metrics &metrics,
+                        std::string region_type) {
   double miss = 0, falarm = 0, conf = 0, total_dur = 0, scored_dur = 0, dur;
   int N_ref, N_hyp, N_correct;
   for (auto &region : score_regions) {
@@ -120,7 +122,8 @@ void compute_der_mapped(std::vector<Region> &score_regions, Metrics &metrics, st
   return;
 }
 
-Metrics compute_der(TurnList &ref, TurnList &hyp, TurnList &uem, std::string regions, float collar) {
+Metrics compute_der(TurnList &ref, TurnList &hyp, TurnList &uem, std::string regions,
+                    float collar) {
   // Merge overlapping segments from the same speaker.
   ref.merge_same_speaker_turns();
   hyp.merge_same_speaker_turns();
@@ -132,7 +135,8 @@ Metrics compute_der(TurnList &ref, TurnList &hyp, TurnList &uem, std::string reg
   // Map the reference and hypothesis speakers to the same labels.
   ref.build_speaker_index();
   hyp.build_speaker_index();
-  std::vector<std::vector<double>> cost_matrix = build_cost_matrix(ref, hyp, eval_regions);
+  std::vector<std::vector<double>> cost_matrix =
+      build_cost_matrix(ref, hyp, eval_regions);
   HungarianAlgorithm hungarian_solver;
   std::vector<int> assignment;
   double cost = hungarian_solver.Solve(cost_matrix, assignment);

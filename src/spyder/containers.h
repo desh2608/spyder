@@ -50,8 +50,7 @@ class Turn {
   std::string spk;
   double start;
   double end;
-  Turn(std::string spk, double start, double end)
-      : spk(spk), start(start), end(end) {}
+  Turn(std::string spk, double start, double end) : spk(spk), start(start), end(end) {}
   ~Turn() {}
   // Overload less than operator to enable sorting on start time
   bool operator<(const Turn &other) const;

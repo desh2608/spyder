@@ -39,30 +39,26 @@ PYBIND11_MODULE(_spyder, m) {
            compute_der
     )doc";
 
-  py::class_<spyder::Turn>(m, "Turn").def(
-      py::init<std::string, double, double>());
+  py::class_<spyder::Turn>(m, "Turn").def(py::init<std::string, double, double>());
 
   py::class_<spyder::TurnList>(m, "TurnList").def(py::init([](py::list turns_) {
     std::vector<spyder::Turn> turns;
-    for (auto turn : turns_)
-      turns.push_back(py::cast<spyder::Turn>(turn));
+    for (auto turn : turns_) turns.push_back(py::cast<spyder::Turn>(turn));
 
-    return new spyder::TurnList(turns); }));
+    return new spyder::TurnList(turns);
+  }));
 
   py::class_<spyder::Metrics>(m, "Metrics")
       .def(py::init<double, double, double, double>())
       .def_readwrite("duration", &spyder::Metrics::duration,
                      py::return_value_policy::copy)
-      .def_readwrite("miss", &spyder::Metrics::miss,
-                     py::return_value_policy::copy)
-      .def_readwrite("falarm", &spyder::Metrics::falarm,
-                     py::return_value_policy::copy)
-      .def_readwrite("conf", &spyder::Metrics::conf,
-                     py::return_value_policy::copy)
-      .def_readwrite("der", &spyder::Metrics::der,
-                     py::return_value_policy::copy);
+      .def_readwrite("miss", &spyder::Metrics::miss, py::return_value_policy::copy)
+      .def_readwrite("falarm", &spyder::Metrics::falarm, py::return_value_policy::copy)
+      .def_readwrite("conf", &spyder::Metrics::conf, py::return_value_policy::copy)
+      .def_readwrite("der", &spyder::Metrics::der, py::return_value_policy::copy);
 
   m.def("compute_der", &spyder::compute_der, py::return_value_policy::reference,
         py::arg("ref"), py::arg("hyp"), py::arg("uem"), py::pos_only(),
-        py::arg("regions") = "all", py::arg("collar") = 0.0, R"doc(Compute DER metrics)doc");
+        py::arg("regions") = "all", py::arg("collar") = 0.0,
+        R"doc(Compute DER metrics)doc");
 }
