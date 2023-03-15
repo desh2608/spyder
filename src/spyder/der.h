@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "containers.h"
+#include "utils.h"
 
 namespace spyder {
 
@@ -43,31 +44,39 @@ class Metrics {
   ~Metrics() {}
 };
 
-// Compute intersection length of two turn tuples.
-// \param A: a Turn tuple
-// \param B: a Turn tuple
-double compute_intersection_length(Turn A, Turn B);
-
-// Build cost matrix given reference and hypothesis lists.
+// Compute the evaluation regions based on the reference, hypothesis, and the UEM segments.
 // \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-std::vector<std::vector<double>> build_cost_matrix(TurnList& ref, TurnList& hyp);
+// \param uem: a list of UEM segments
+// \param collar: the collar size in seconds
+// \return a list of evaluation regions
+std::vector<Region> get_eval_regions(TurnList& ref, TurnList& hyp, TurnList& uem);
 
-// Map reference and hypothesis labels to common space based on assignment
-// vector.
-// \param ref, reference list of turns
-// \param hyp, hypothesis list of turns
-// \param assignment, vector of assignments from ref to hyp
-void map_labels(TurnList& ref, TurnList& hyp, std::vector<int> assignment);
+// Compute the evaluation regions based on the reference, hypothesis, and the UEM segments.
+// \param ref: a list of reference turns
+// \param hyp: a list of hypothesis turns
+// \param uem: a list of UEM segments
+// \param collar: the collar size in seconds
+// \return a list of scoring regions; this is different from the evaluation regions in 2 ways:
+// 1. The speaker labels in scoring regions are mapped to a common label space.
+// 2. It uses collars, and so it is a subset of the evaluation regions.
+std::vector<Region> get_score_regions(TurnList& ref, TurnList& hyp, TurnList& uem, float collar = 0.0);
 
 // Compute diarization error rate with mapped turn lists.
 // \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics);
+// \param score_regions: a list of evaluation regions
+// \param metrics: the DER metrics
+// \param regions: the regions to compute DER for (e.g. "single", "overlap", etc.)
+void compute_der_mapped(std::vector<Region>& score_regions, Metrics& metrics, std::string regions);
 
 // Compute diarization error rate. First the lists are mapped to a common
-// label space using the Hungarian algorithm.// \param ref: a list of reference turns
+// label space using the Hungarian algorithm.
+// \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
+// \param uem: a list of UEM segments
+// \param regions: the regions to compute DER for (e.g. "single", "overlap", etc.)
+// \param collar: the collar size in seconds
 Metrics compute_der(TurnList& ref, TurnList& hyp, TurnList& uem, std::string regions = "all", float collar = 0.0);
 
 }  // end namespace spyder

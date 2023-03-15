@@ -165,12 +165,10 @@ def DER(
         collar (float): Collar size in seconds.
         verbose (bool): If True, print DER for each file.
     """
+    if uem is None:
+        uem = get_uem_turns(ref, hyp)
     if isinstance(ref, dict) and isinstance(hyp, dict):
-        assert uem is None or isinstance(
-            uem, dict
-        ), "UEM must be dict if ref and hyp are dict"
-        if uem is None:
-            uem = get_uem_turns(ref, hyp)
+        assert isinstance(uem, dict), "UEM must be dict if ref and hyp are dict"
         metrics = _DER_multi(
             ref, hyp, uem, per_file, skip_missing, regions, collar, verbose
         )
@@ -179,14 +177,14 @@ def DER(
         # in this case ref and hyp must have same length
         if len(ref) != len(hyp):
             raise ValueError("if ref and hyp are not dict, they must have same length")
+
+        assert len(uem) == len(ref), "uem must have same length as ref and hyp"
+
         # convert list into dict, indexed by utterance index
         ref_turns = dict(zip(range(len(ref)), ref))
         hyp_turns = dict(zip(range(len(hyp)), hyp))
-        if uem is None:
-            uem = get_uem_turns(ref_turns, hyp_turns)
-        else:
-            assert len(uem) == len(ref), "uem must have same length as ref and hyp"
-            uem_turns = dict(zip(range(len(uem)), uem))
+        uem_turns = dict(zip(range(len(uem)), uem))
+
         metrics = _DER_multi(
             ref_turns,
             hyp_turns,
@@ -198,6 +196,7 @@ def DER(
             verbose,
         )
     elif np.ndim(ref[-1]) == 1 and np.ndim(hyp[-1]) == 1:
+        assert isinstance(uem, list), "UEM must be list if ref and hyp are list"
         # only one utterance
         metrics = _DER(ref, hyp, uem, regions, collar)
         if verbose:
