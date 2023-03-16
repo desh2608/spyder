@@ -24,7 +24,6 @@ ext_modules = [
         sorted(glob("src/spyder/*.cc")),
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
-        extra_compile_args=["-g"],
     ),
 ]
 

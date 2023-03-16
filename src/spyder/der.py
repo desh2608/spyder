@@ -211,6 +211,7 @@ def DER(
 @click.argument("hyp_rttm", nargs=1, type=click.Path(exists=True))
 @click.option(
     "--uem",
+    "-u",
     nargs=1,
     type=click.Path(exists=True),
     default=None,
@@ -218,6 +219,7 @@ def DER(
 )
 @click.option(
     "--per-file",
+    "-p",
     is_flag=True,
     default=False,
     show_default=True,
@@ -225,6 +227,7 @@ def DER(
 )
 @click.option(
     "--skip-missing",
+    "-s",
     is_flag=True,
     default=False,
     show_default=True,
@@ -232,6 +235,7 @@ def DER(
 )
 @click.option(
     "--regions",
+    "-r",
     type=click.Choice(["all", "single", "overlap", "nonoverlap"]),
     default="all",
     show_default=True,
@@ -243,6 +247,7 @@ def DER(
 )
 @click.option(
     "--collar",
+    "-c",
     type=click.FloatRange(min=0.0),
     default=0.0,
     show_default=True,

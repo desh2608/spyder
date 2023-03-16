@@ -60,10 +60,28 @@ std::vector<std::vector<double>> build_cost_matrix(TurnList &ref, TurnList &hyp)
   return cost_matrix;
 }
 
-void map_labels(TurnList &ref, TurnList &hyp, std::vector<int> assignment,
-                std::map<std::string, std::string> &ref_map,
-                std::map<std::string, std::string> &hyp_map) {
+std::vector<std::vector<double>> build_cost_matrix(TurnList &ref, TurnList &hyp,
+                                                   std::vector<Region> &regions) {
+  int M = ref.forward_index.size();
+  int N = hyp.forward_index.size();
+  std::vector<std::vector<double>> cost_matrix(M, std::vector<double>(N));
+
+  int i, j;
+  for (auto &region : regions) {
+    for (auto &ref_spk : region.ref_spk) {
+      for (auto &hyp_spk : region.hyp_spk) {
+        i = ref.forward_index.find(ref_spk)->second;
+        j = hyp.forward_index.find(hyp_spk)->second;
+        cost_matrix[i][j] -= region.duration();
+      }
+    }
+  }
+  return cost_matrix;
+}
+
+void map_labels(TurnList &ref, TurnList &hyp, std::vector<int> assignment) {
   int k = 0;
+  std::map<std::string, std::string> ref_map, hyp_map;
   std::set<std::string> ref_spk_remaining = ref.speaker_set;
   std::set<std::string> hyp_spk_remaining = hyp.speaker_set;
   std::string ref_spk, hyp_spk;
@@ -84,9 +102,30 @@ void map_labels(TurnList &ref, TurnList &hyp, std::vector<int> assignment,
   for (auto &spk : hyp_spk_remaining) {
     hyp_map.insert(std::pair<std::string, std::string>(spk, std::to_string(k++)));
   }
+  ref.map_labels(ref_map);
+  hyp.map_labels(hyp_map);
+  // free up space
+  ref_map.clear();
+  hyp_map.clear();
 }
 
-std::vector<Region> create_regions_from_tokens(std::vector<Token> &tokens) {
+std::vector<Region> get_eval_regions(TurnList &ref, TurnList &hyp, TurnList &uem) {
+  // Create a list of tokens combining reference, hypothesis, and UEM segments
+  std::vector<Token> tokens(2 * (ref.size() + hyp.size() + uem.size()));
+  int i = -1;
+  for (auto &turn : uem.turns) {
+    tokens[++i] = Token(START, UEM, turn.spk, turn.start);
+    tokens[++i] = Token(END, UEM, turn.spk, turn.end);
+  }
+  for (auto &turn : ref.turns) {
+    tokens[++i] = Token(START, REF, turn.spk, turn.start);
+    tokens[++i] = Token(END, REF, turn.spk, turn.end);
+  }
+  for (auto &turn : hyp.turns) {
+    tokens[++i] = Token(START, HYP, turn.spk, turn.start);
+    tokens[++i] = Token(END, HYP, turn.spk, turn.end);
+  }
+
   // Sort the tokens. They will be sorted first by timestamp and then
   // by type (i.e. "end" tokens before "start"), since we overloaded
   // the Token "<" (less than) operator.
@@ -96,16 +135,15 @@ std::vector<Region> create_regions_from_tokens(std::vector<Token> &tokens) {
   std::vector<Region> regions;
   double region_start = tokens[0].timestamp;
   std::unordered_set<std::string> ref_spk, hyp_spk;
-  int evaluate = 0;
+  bool evaluate = false;
 
   for (int i = 0; i < tokens.size(); ++i) {
     // If the evaluate flag is set and the region is not empty, add it to the
     // list of regions
-    if (evaluate == 1 && tokens[i].timestamp - region_start > DBL_EPSILON) {
+    if (evaluate && tokens[i].timestamp - region_start > DBL_EPSILON) {
       std::vector<std::string> ref_spk_list(ref_spk.begin(), ref_spk.end());
       std::vector<std::string> hyp_spk_list(hyp_spk.begin(), hyp_spk.end());
-      regions.push_back(
-          Region(region_start, tokens[i].timestamp, ref_spk_list, hyp_spk_list));
+      regions.push_back(Region(region_start, tokens[i].timestamp, ref_spk_list, hyp_spk_list));
     }
 
     // Update the list of ref and hyp speakers in the current region
@@ -123,13 +161,63 @@ std::vector<Region> create_regions_from_tokens(std::vector<Token> &tokens) {
       }
     } else {
       // If it is a UEM token, update the evaluate flag
-      evaluate = int(tokens[i].type == START);
+      evaluate = (tokens[i].type == START);
     }
 
     // Update the region start time
     region_start = tokens[i].timestamp;
   }
+  // free up memory
+  std::vector<Token>().swap(tokens);
   return regions;
+}
+
+void add_collar_to_uem(TurnList &uem, TurnList &ref, float collar) {
+  // Create a list of tokens combining reference and UEM segments
+  std::vector<Token> tokens(4 * ref.size() + 2 * uem.size());
+  int i = -1;
+  for (auto &turn : uem.turns) {
+    tokens[++i] = Token(START, UEM, turn.spk, turn.start);
+    tokens[++i] = Token(END, UEM, turn.spk, turn.end);
+  }
+  for (auto &turn : ref.turns) {
+    tokens[++i] = Token(END, REF, turn.spk, turn.start - collar);
+    tokens[++i] = Token(START, REF, turn.spk, turn.start + collar);
+    tokens[++i] = Token(END, REF, turn.spk, turn.end - collar);
+    tokens[++i] = Token(START, REF, turn.spk, turn.end + collar);
+  }
+
+  // Sort the tokens. They will be sorted first by timestamp and then
+  // by type (i.e. "end" tokens before "start"), since we overloaded
+  // the Token "<" (less than) operator.
+  std::sort(tokens.begin(), tokens.end());
+
+  std::vector<Turn> uem_turns;
+
+  double region_start = tokens[0].timestamp;
+  std::unordered_set<std::string> ref_spk, hyp_spk;
+  std::string dummy_spk = uem.turns[0].spk;
+  int evaluate = 0;
+
+  for (int i = 0; i < tokens.size(); ++i) {
+    // If it is a START token, increment the evaluate flag
+    if (tokens[i].type == START) {
+      evaluate += 1;
+      if (evaluate == 1) {
+        region_start = tokens[i].timestamp;
+      }
+    } else {
+      evaluate -= 1;
+      if (evaluate == 0 && tokens[i].timestamp - region_start > DBL_EPSILON) {
+        uem_turns.push_back(Turn(dummy_spk, region_start, tokens[i].timestamp));
+      }
+    }
+  }
+  // free up memory
+  std::vector<Token>().swap(tokens);
+
+  // Replace the old list with the new list
+  uem.turns.swap(uem_turns);
 }
 
 }  // end namespace spyder

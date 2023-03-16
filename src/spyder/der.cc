@@ -36,55 +36,6 @@
 
 namespace spyder {
 
-std::vector<Region> get_eval_regions(TurnList &ref, TurnList &hyp, TurnList &uem) {
-  // Create a list of tokens combining reference, hypothesis, and UEM segments
-  std::vector<Token> tokens(2 * (ref.size() + hyp.size()));
-  int i = -1;
-  for (auto &turn : uem.turns) {
-    tokens[++i] = Token(START, UEM, turn.spk, turn.start);
-    tokens[++i] = Token(END, UEM, turn.spk, turn.end);
-  }
-  for (auto &turn : ref.turns) {
-    tokens[++i] = Token(START, REF, turn.spk, turn.start);
-    tokens[++i] = Token(END, REF, turn.spk, turn.end);
-  }
-  for (auto &turn : hyp.turns) {
-    tokens[++i] = Token(START, HYP, turn.spk, turn.start);
-    tokens[++i] = Token(END, HYP, turn.spk, turn.end);
-  }
-  std::vector<Region> regions = create_regions_from_tokens(tokens);
-  // free up memory
-  std::vector<Token>().swap(tokens);
-  return regions;
-}
-
-std::vector<Region> get_score_regions(TurnList &ref, TurnList &hyp, TurnList &uem,
-                                      float collar) {
-  // Create a list of tokens combining reference, hypothesis, and UEM segments
-  std::vector<Token> tokens(4 * (ref.size() + hyp.size()) + 2 * uem.size());
-  int i = -1;
-  for (auto &turn : uem.turns) {
-    tokens[++i] = Token(START, UEM, turn.spk, turn.start);
-    tokens[++i] = Token(END, UEM, turn.spk, turn.end);
-  }
-  for (auto &turn : ref.turns) {
-    tokens[++i] = Token(END, REF, turn.spk, turn.start - collar);
-    tokens[++i] = Token(START, REF, turn.spk, turn.start + collar);
-    tokens[++i] = Token(END, REF, turn.spk, turn.end - collar);
-    tokens[++i] = Token(START, REF, turn.spk, turn.end + collar);
-  }
-  for (auto &turn : hyp.turns) {
-    tokens[++i] = Token(END, HYP, turn.spk, turn.start - collar);
-    tokens[++i] = Token(START, HYP, turn.spk, turn.start + collar);
-    tokens[++i] = Token(END, HYP, turn.spk, turn.end - collar);
-    tokens[++i] = Token(START, HYP, turn.spk, turn.end + collar);
-  }
-  std::vector<Region> regions = create_regions_from_tokens(tokens);
-  // free up memory
-  std::vector<Token>().swap(tokens);
-  return regions;
-}
-
 void compute_der_mapped(std::vector<Region> &score_regions, Metrics &metrics,
                         std::string region_type) {
   double miss = 0, falarm = 0, conf = 0, total_dur = 0, scored_dur = 0, dur;
@@ -94,8 +45,7 @@ void compute_der_mapped(std::vector<Region> &score_regions, Metrics &metrics,
     N_ref = region.ref_spk.size();
     N_hyp = region.hyp_spk.size();
     if (!(region_type == ALL) && !(region_type == SINGLE && N_ref == 1) &&
-        !(region_type == NONOVERLAP && N_ref <= 1) &&
-        !(region_type == OVERLAP && N_ref > 1))
+        !(region_type == NONOVERLAP && N_ref <= 1) && !(region_type == OVERLAP && N_ref > 1))
       continue;
     N_correct = region.num_correct();
     miss += dur * (std::max(0, N_ref - N_hyp));
@@ -135,24 +85,21 @@ Metrics compute_der(TurnList &ref, TurnList &hyp, TurnList &uem, std::string reg
   // Map the reference and hypothesis speakers to the same labels.
   ref.build_speaker_index();
   hyp.build_speaker_index();
-  std::vector<std::vector<double>> cost_matrix =
-      build_cost_matrix(ref, hyp, eval_regions);
+  std::vector<std::vector<double>> cost_matrix = build_cost_matrix(ref, hyp, eval_regions);
   HungarianAlgorithm hungarian_solver;
   std::vector<int> assignment;
   double cost = hungarian_solver.Solve(cost_matrix, assignment);
   map_labels(ref, hyp, assignment);
 
   // Obtain scoring regions based on collar
-  std::vector<Region> score_regions;
-  if (collar == 0.0) {
-    score_regions = get_eval_regions(ref, hyp, uem);
-  } else {
-    score_regions = get_score_regions(ref, hyp, uem, collar);
+  if (collar != 0.0) {
+    add_collar_to_uem(uem, ref, collar);
   }
+  eval_regions = get_eval_regions(ref, hyp, uem);
 
   // Finally, we compute the DER metrics.
   Metrics metrics;
-  compute_der_mapped(score_regions, metrics, regions);
+  compute_der_mapped(eval_regions, metrics, regions);
   return metrics;
 }
 
