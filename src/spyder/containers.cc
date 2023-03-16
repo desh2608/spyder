@@ -122,9 +122,20 @@ void TurnList::map_labels(std::map<std::string, std::string> &label_map) {
 
 bool Token::operator<(const Token &other) const {
   if (fabs(timestamp - other.timestamp) > DBL_EPSILON) {
+    // case 1: timestamps are different
     return (timestamp < other.timestamp);
-  } else {
+  } else if (type != other.type) {
+    // case 2: timestamps are same but types are different
     return (type.compare(other.type) < 0);
+  } else {
+    // case 3: timestamps and types are same, but system is different
+    if (type == START) {
+      // case 3a: start token -> UEM < ref < hyp
+      return (system.compare(other.system) > 0);
+    } else {
+      // case 3b: end token -> hyp < ref < UEM
+      return (system.compare(other.system) < 0);
+    }
   }
 }
 
@@ -138,8 +149,9 @@ double Region::duration() { return (end - start); }
 int Region::num_correct() {
   int N_correct = 0;
   for (auto &ref : ref_spk) {
-    if (std::find(hyp_spk.begin(), hyp_spk.end(), ref) != hyp_spk.end())
-      N_correct++;
+    if (std::count(hyp_spk.begin(), hyp_spk.end(), ref) > 0) {
+      N_correct += 1;
+    }
   }
   return N_correct;
 }

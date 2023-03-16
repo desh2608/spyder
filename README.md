@@ -37,16 +37,22 @@ hyp = [("1", 0.0, 0.8),
        ("3", 2.1, 3.9),
        ("1", 3.8, 5.2)]
 
-metrics = spyder.DER(ref, hyp)
-print(metrics)
+# compute DER on full recording
+print(spyder.DER(ref, hyp))
 # DERMetrics(duration=5.10,miss=9.80%,falarm=21.57%,conf=25.49%,der=56.86%)
 
-print (f"{metrics.miss:.3f}, {metrics.falarm:.3f}, {metrics.conf:3f}, {metrics.der:.3f}")
-# 0.098, 0.216, 0.254, 0.569
-
-metrics2 = spyder.DER(ref, hyp, regions="single")
-print(metrics2)
+# compute DER on single-speaker regions only
+print(spyder.DER(ref, hyp, regions="single"))
 # DERMetrics(duration=4.10,miss=0.00%,falarm=26.83%,conf=19.51%,der=46.34%)
+
+# compute DER using UEM segments
+uem = [(0.5, 5.0)]
+print(spyder.DER(ref, hyp, uem=uem))
+# DERMetrics(duration=4.50,miss=11.11%,falarm=22.22%,conf=26.67%,der=60.00%)
+
+# compute DER using collar
+print(spyder.DER(ref, hyp, collar=0.2))
+# DERMetrics(duration=3.10,miss=3.23%,falarm=12.90%,conf=19.35%,der=35.48%)
 ```
 
 ### Compute DER for multiple pairs of reference and hypothesis
@@ -93,6 +99,8 @@ Evaluated 2 recordings on `all` regions. Results:
 ╘═════════════╧════════════════╧═════════╧════════════╧═════════╧════════╛
 ```
 
+Additionally, you can provide UEM and collar parameters similar to single pair case.
+
 ### Compute per-file and overall DERs between reference and hypothesis RTTMs using command line tool
 
 Alternatively, __spyder__ can also be invoked from the command line to compute the per-file
@@ -102,18 +110,27 @@ and average DERs between reference and hypothesis RTTMs.
 Usage: spyder [OPTIONS] REF_RTTM HYP_RTTM
 
 Options:
-  --per-file                      If this flag is set, print per file results.
+  -u, --uem PATH                  UEM file (format: <recording_id> <channel>
+                                  <start> <end>)
+
+  -p, --per-file                  If this flag is set, print per file results.
                                   [default: False]
 
-  --skip-missing                  Skip recordings which are missing in
+  -s, --skip-missing              Skip recordings which are missing in
                                   hypothesis (i.e., not counted in missed
                                   speech).  [default: False]
 
-  --regions [all|single|overlap]  Only evaluate on the selected region type.
-                                  For example, if `single` is selected, all
-                                  overlapping regions are ignored for
-                                  evaluation.  [default: all]
+  -r, --regions [all|single|overlap|nonoverlap]
+                                  Only evaluate on the selected region type.
+                                  Default is all.  - all: all regions.  -
+                                  single: only single-speaker regions (ignore
+                                  silence and multiple speaker).  - overlap:
+                                  only regions with multiple speakers in the
+                                  reference.  - nonoverlap: only regions
+                                  without multiple speakers in the reference.
+                                  [default: all]
 
+  -c, --collar FLOAT RANGE        Collar size.  [default: 0.0]
   --help                          Show this message and exit.
 ```
 
@@ -128,44 +145,44 @@ Evaluated 16 recordings on `all` regions. Results:
 │ Overall     │       33952.95 │  11.48% │      2.27% │   9.81% │ 23.56% │
 ╘═════════════╧════════════════╧═════════╧════════════╧═════════╧════════╛
 
-> spyder ref_rttm hyp_rttm --regions single --per-file
+> spyder ref_rttm hyp_rttm -r single -p -c 0.25
 Evaluated 16 recordings on `single` regions. Results:
 ╒═════════════════════╤════════════════╤═════════╤════════════╤═════════╤════════╕
 │ Recording           │   Duration (s) │   Miss. │   F.Alarm. │   Conf. │    DER │
 ╞═════════════════════╪════════════════╪═════════╪════════════╪═════════╪════════╡
-│ EN2002a.Mix-Headset │        1290.50 │   0.04% │      6.24% │   8.59% │ 14.86% │
+│ EN2002a.Mix-Headset │        1032.05 │   0.00% │      2.98% │   4.97% │  7.94% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ EN2002b.Mix-Headset │        1041.65 │   0.03% │      6.61% │   9.00% │ 15.65% │
+│ EN2002b.Mix-Headset │         853.56 │   0.00% │      3.40% │   5.39% │  8.80% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ EN2002c.Mix-Headset │        1906.56 │   0.02% │      3.30% │   2.58% │  5.90% │
+│ EN2002c.Mix-Headset │        1641.68 │   0.00% │      1.42% │   1.05% │  2.47% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ EN2002d.Mix-Headset │        1258.10 │   0.04% │      6.76% │  10.92% │ 17.71% │
+│ EN2002d.Mix-Headset │        1006.27 │   0.00% │      3.12% │   7.14% │ 10.26% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ ES2004a.Mix-Headset │         644.22 │   0.03% │      3.58% │   7.21% │ 10.82% │
+│ ES2004a.Mix-Headset │         539.48 │   0.00% │      1.62% │   5.12% │  6.74% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ ES2004b.Mix-Headset │        1774.77 │   0.02% │      1.77% │   2.74% │  4.53% │
+│ ES2004b.Mix-Headset │        1582.05 │   0.00% │      0.82% │   1.39% │  2.21% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ ES2004c.Mix-Headset │        1730.05 │   0.02% │      1.17% │   2.67% │  3.86% │
+│ ES2004c.Mix-Headset │        1526.84 │   0.00% │      0.45% │   1.27% │  1.72% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ ES2004d.Mix-Headset │        1422.67 │   0.04% │      4.10% │  13.24% │ 17.37% │
+│ ES2004d.Mix-Headset │        1172.72 │   0.00% │      1.77% │   9.60% │ 11.37% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ IS1009a.Mix-Headset │         506.56 │   0.03% │      7.99% │   7.01% │ 15.03% │
+│ IS1009a.Mix-Headset │         425.51 │   0.00% │      3.94% │   4.60% │  8.54% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ IS1009b.Mix-Headset │        1565.30 │   0.02% │      3.13% │   1.92% │  5.08% │
+│ IS1009b.Mix-Headset │        1412.03 │   0.00% │      1.23% │   0.85% │  2.08% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ IS1009c.Mix-Headset │        1413.05 │   0.03% │      4.06% │   2.21% │  6.29% │
+│ IS1009c.Mix-Headset │        1283.21 │   0.00% │      2.74% │   1.00% │  3.75% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ IS1009d.Mix-Headset │        1364.54 │   0.03% │      4.48% │   5.42% │  9.94% │
+│ IS1009d.Mix-Headset │        1164.49 │   0.00% │      2.27% │   3.37% │  5.64% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ TS3003a.Mix-Headset │         925.10 │   0.03% │      0.04% │  14.43% │ 14.50% │
+│ TS3003a.Mix-Headset │         804.27 │   0.00% │      0.00% │  11.28% │ 11.28% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ TS3003b.Mix-Headset │        1685.06 │   0.03% │      0.87% │   1.91% │  2.81% │
+│ TS3003b.Mix-Headset │        1509.49 │   0.00% │      0.36% │   0.75% │  1.11% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ TS3003c.Mix-Headset │        1731.52 │   0.02% │      2.71% │   3.17% │  5.90% │
+│ TS3003c.Mix-Headset │        1566.84 │   0.00% │      1.76% │   1.74% │  3.50% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ TS3003d.Mix-Headset │        1651.62 │   0.04% │      4.30% │   5.38% │  9.73% │
+│ TS3003d.Mix-Headset │        1357.45 │   0.00% │      2.42% │   2.93% │  5.35% │
 ├─────────────────────┼────────────────┼─────────┼────────────┼─────────┼────────┤
-│ Overall             │       21911.26 │   0.03% │      3.52% │   5.48% │  9.03% │
+│ Overall             │       18877.94 │   0.00% │      1.72% │   3.29% │  5.01% │
 ╘═════════════════════╧════════════════╧═════════╧════════════╧═════════╧════════╛
 ```
 

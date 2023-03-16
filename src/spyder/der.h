@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "containers.h"
+#include "utils.h"
 
 namespace spyder {
 
@@ -39,36 +40,28 @@ class Metrics {
   double conf;
   double der;
   Metrics() {}
-  Metrics(double duration, double miss, double falarm, double conf) : duration(duration), miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
+  Metrics(double duration, double miss, double falarm, double conf)
+      : duration(duration), miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}
   ~Metrics() {}
 };
-
-// Compute intersection length of two turn tuples.
-// \param A: a Turn tuple
-// \param B: a Turn tuple
-double compute_intersection_length(Turn A, Turn B);
-
-// Build cost matrix given reference and hypothesis lists.
-// \param ref: a list of reference turns
-// \param hyp: a list of hypothesis turns
-std::vector<std::vector<double>> build_cost_matrix(TurnList& ref, TurnList& hyp);
-
-// Map reference and hypothesis labels to common space based on assignment
-// vector.
-// \param ref, reference list of turns
-// \param hyp, hypothesis list of turns
-// \param assignment, vector of assignments from ref to hyp
-void map_labels(TurnList& ref, TurnList& hyp, std::vector<int> assignment);
 
 // Compute diarization error rate with mapped turn lists.
 // \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-void compute_der_mapped(TurnList& ref, TurnList& hyp, Metrics& metrics);
+// \param score_regions: a list of evaluation regions
+// \param metrics: the DER metrics
+// \param regions: the regions to compute DER for (e.g. "single", "overlap", etc.)
+void compute_der_mapped(std::vector<Region>& score_regions, Metrics& metrics, std::string regions);
 
 // Compute diarization error rate. First the lists are mapped to a common
-// label space using the Hungarian algorithm.// \param ref: a list of reference turns
+// label space using the Hungarian algorithm.
+// \param ref: a list of reference turns
 // \param hyp: a list of hypothesis turns
-Metrics compute_der(TurnList& ref, TurnList& hyp, std::string regions = "all");
+// \param uem: a list of UEM segments
+// \param regions: the regions to compute DER for (e.g. "single", "overlap", etc.)
+// \param collar: the collar size in seconds
+Metrics compute_der(TurnList& ref, TurnList& hyp, TurnList& uem, std::string regions = "all",
+                    float collar = 0.0);
 
 }  // end namespace spyder
 

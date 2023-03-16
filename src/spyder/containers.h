@@ -35,6 +35,13 @@ const std::string START = "start";
 const std::string END = "end";
 const std::string REF = "ref";
 const std::string HYP = "hyp";
+const std::string UEM = "uem";
+
+// Strings defining region types to evaluate.
+const std::string ALL = "all";
+const std::string SINGLE = "single";
+const std::string OVERLAP = "overlap";
+const std::string NONOVERLAP = "nonoverlap";
 
 // Stores speaker turns as provided in the input reference and hypothesis.
 class Turn {
@@ -42,8 +49,7 @@ class Turn {
   std::string spk;
   double start;
   double end;
-  Turn(std::string spk, double start, double end)
-      : spk(spk), start(start), end(end) {}
+  Turn(std::string spk, double start, double end) : spk(spk), start(start), end(end) {}
   ~Turn() {}
   // Overload less than operator to enable sorting on start time
   bool operator<(const Turn &other) const;
@@ -97,7 +103,13 @@ class Token {
   Token(std::string type, std::string system, std::string spk, double timestamp)
       : type(type), system(system), spk(spk), timestamp(timestamp) {}
   ~Token() {}
-  // Overload less than operator to enable sorting on timestamp and type
+
+  // Overload less than operator to enable sorting on timestamp, type, and system.
+  // We want to sort the tokens in the following order:
+  // 1. tokens that have lower timestamp
+  // 2. for tokens that have same timestamp, "end" tokens come before "start" tokens
+  // 3. for tokens that have same timestamp and type, "uem" tokens come first if
+  //    type is "start" and last if type is "end"
   bool operator<(const Token &other) const;
 };
 
