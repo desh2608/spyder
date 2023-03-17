@@ -6,6 +6,8 @@ from tabulate import tabulate
 
 from _spyder import Metrics, Turn, TurnList, compute_der
 
+__all__ = ["compute_der_from_rttm", "DERMetrics", "DER"]
+
 
 class DERMetrics:
     def __init__(self, metrics):
