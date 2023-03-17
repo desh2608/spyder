@@ -2,3 +2,4 @@ recursive-include src *.cpp
 recursive-include src *.h
 recursive-include lib *.h
 pyproject.toml
+prune test*
