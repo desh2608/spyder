@@ -14,6 +14,8 @@ class DERMetrics:
         self.falarm = metrics.falarm
         self.conf = metrics.conf
         self.der = metrics.der
+        self.ref_map = metrics.ref_map
+        self.hyp_map = metrics.hyp_map
 
     def __repr__(self):
         return (
@@ -44,9 +46,11 @@ def _DER_multi(
     skip_missing=False,
     regions="all",
     collar=0.0,
+    print_speaker_map=False,
     verbose=True,
 ):
     all_metrics = []
+    speaker_maps = {}
     for reco_id in ref_turns:
         if reco_id not in hyp_turns:
             if skip_missing:
@@ -74,11 +78,7 @@ def _DER_multi(
                 metrics.der,
             ]
         )
-
-    if verbose:
-        print(
-            f"Evaluated {len(all_metrics)} recordings on `{regions}` regions. Results:"
-        )
+        speaker_maps[reco_id] = {"ref": metrics.ref_map, "hyp": metrics.hyp_map}
 
     total_duration = sum([x[1] for x in all_metrics])
     total_miss = sum([x[1] * x[2] for x in all_metrics])  # duration*miss
@@ -93,6 +93,13 @@ def _DER_multi(
 
     selected_metrics = all_metrics if per_file else [all_metrics[-1]]
     if verbose:
+        print(f"Evaluated {len(all_metrics)} recordings on `{regions}` regions.")
+        if print_speaker_map:
+            from pprint import pprint
+
+            print("Speaker map:")
+            pprint(speaker_maps, width=1)
+        print("DER metrics:")
         print(
             tabulate(
                 selected_metrics,
@@ -164,6 +171,17 @@ def DER(
                 i.e. single speaker regions and silence regions.
         collar (float): Collar size in seconds.
         verbose (bool): If True, print DER for each file.
+
+    Returns:
+        dict: {recording_id: DERMetrics} if per_file is True, otherwise {overall: DERMetrics}.
+        DERMetrics is a named tuple with the following fields:
+            - duration: Duration of the scored regions.
+            - miss: Missed speech %.
+            - falarm: False alarm %.
+            - conf: Confusion error %.
+            - der: Diarization error rate %.
+            - ref_map: Speaker map from reference to common labels.
+            - hyp_map: Speaker map from hypothesis to common labels.
     """
     if uem is None:
         uem = get_uem_turns(ref, hyp)
@@ -253,6 +271,14 @@ def DER(
     show_default=True,
     help="Collar size.",
 )
+@click.option(
+    "--print-speaker-map",
+    "-m",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Print speaker mapping for reference and hypothesis speakers.",
+)
 def compute_der_from_rttm(
     ref_rttm,
     hyp_rttm,
@@ -261,6 +287,7 @@ def compute_der_from_rttm(
     skip_missing=False,
     regions="all",
     collar=0.0,
+    print_speaker_map=False,
     verbose=True,
 ):
     ref_turns = defaultdict(list)
@@ -301,5 +328,6 @@ def compute_der_from_rttm(
         skip_missing,
         regions,
         collar,
+        print_speaker_map,
         verbose,
     )

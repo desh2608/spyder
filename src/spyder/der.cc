@@ -89,7 +89,9 @@ Metrics compute_der(TurnList &ref, TurnList &hyp, TurnList &uem, std::string reg
   HungarianAlgorithm hungarian_solver;
   std::vector<int> assignment;
   double cost = hungarian_solver.Solve(cost_matrix, assignment);
-  map_labels(ref, hyp, assignment);
+
+  std::map<std::string, std::string> ref_map, hyp_map;
+  map_labels(ref, hyp, assignment, ref_map, hyp_map);
 
   // Obtain scoring regions based on collar
   if (collar != 0.0) {
@@ -99,6 +101,8 @@ Metrics compute_der(TurnList &ref, TurnList &hyp, TurnList &uem, std::string reg
 
   // Finally, we compute the DER metrics.
   Metrics metrics;
+  metrics.ref_map = ref_map;
+  metrics.hyp_map = hyp_map;
   compute_der_mapped(eval_regions, metrics, regions);
   return metrics;
 }

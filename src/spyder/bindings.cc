@@ -54,7 +54,9 @@ PYBIND11_MODULE(_spyder, m) {
       .def_readwrite("miss", &spyder::Metrics::miss, py::return_value_policy::copy)
       .def_readwrite("falarm", &spyder::Metrics::falarm, py::return_value_policy::copy)
       .def_readwrite("conf", &spyder::Metrics::conf, py::return_value_policy::copy)
-      .def_readwrite("der", &spyder::Metrics::der, py::return_value_policy::copy);
+      .def_readwrite("der", &spyder::Metrics::der, py::return_value_policy::copy)
+      .def_readwrite("ref_map", &spyder::Metrics::ref_map, py::return_value_policy::copy)
+      .def_readwrite("hyp_map", &spyder::Metrics::hyp_map, py::return_value_policy::copy);
 
   m.def("compute_der", &spyder::compute_der, py::return_value_policy::reference, py::arg("ref"),
         py::arg("hyp"), py::arg("uem"), py::pos_only(), py::arg("regions") = "all",
