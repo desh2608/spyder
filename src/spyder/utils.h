@@ -26,6 +26,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "containers.h"
@@ -55,7 +56,11 @@ std::vector<std::vector<double>> build_cost_matrix(TurnList& ref, TurnList& hyp,
 // \param ref, reference list of turns
 // \param hyp, hypothesis list of turns
 // \param assignment, vector of assignments from ref to hyp
-void map_labels(TurnList& ref, TurnList& hyp, std::vector<int> assignment);
+// \param ref_map, map from reference labels to common labels
+// \param hyp_map, map from hypothesis labels to common labels
+void map_labels(TurnList& ref, TurnList& hyp, std::vector<int>& assignment,
+                std::map<std::string, std::string>& ref_map,
+                std::map<std::string, std::string>& hyp_map);
 
 // Compute the evaluation regions based on the reference, hypothesis, and the UEM
 // segments.

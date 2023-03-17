@@ -79,9 +79,10 @@ std::vector<std::vector<double>> build_cost_matrix(TurnList &ref, TurnList &hyp,
   return cost_matrix;
 }
 
-void map_labels(TurnList &ref, TurnList &hyp, std::vector<int> assignment) {
+void map_labels(TurnList &ref, TurnList &hyp, std::vector<int> &assignment,
+                std::map<std::string, std::string> &ref_map,
+                std::map<std::string, std::string> &hyp_map) {
   int k = 0;
-  std::map<std::string, std::string> ref_map, hyp_map;
   std::set<std::string> ref_spk_remaining = ref.speaker_set;
   std::set<std::string> hyp_spk_remaining = hyp.speaker_set;
   std::string ref_spk, hyp_spk;
@@ -104,9 +105,6 @@ void map_labels(TurnList &ref, TurnList &hyp, std::vector<int> assignment) {
   }
   ref.map_labels(ref_map);
   hyp.map_labels(hyp_map);
-  // free up space
-  ref_map.clear();
-  hyp_map.clear();
 }
 
 std::vector<Region> get_eval_regions(TurnList &ref, TurnList &hyp, TurnList &uem) {

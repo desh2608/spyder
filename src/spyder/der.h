@@ -39,6 +39,8 @@ class Metrics {
   double falarm;
   double conf;
   double der;
+  std::map<std::string, std::string> ref_map;
+  std::map<std::string, std::string> hyp_map;
   Metrics() {}
   Metrics(double duration, double miss, double falarm, double conf)
       : duration(duration), miss(miss), falarm(falarm), conf(conf), der(miss + falarm + conf) {}

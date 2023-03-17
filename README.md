@@ -53,6 +53,11 @@ print(spyder.DER(ref, hyp, uem=uem))
 # compute DER using collar
 print(spyder.DER(ref, hyp, collar=0.2))
 # DERMetrics(duration=3.10,miss=3.23%,falarm=12.90%,conf=19.35%,der=35.48%)
+
+# get speaker mapping between reference and hypothesis
+metrics = spyder.DER(ref, hyp)
+print(f"Reference speaker map: {metrics.ref_map}")
+print(f"Hypothesis speaker map: {metrics.hyp_map}")
 ```
 
 ### Compute DER for multiple pairs of reference and hypothesis
@@ -131,6 +136,9 @@ Options:
                                   [default: all]
 
   -c, --collar FLOAT RANGE        Collar size.  [default: 0.0]
+  -m, --print-speaker-map         Print speaker mapping for reference and
+                                  hypothesis speakers.  [default: False]
+
   --help                          Show this message and exit.
 ```
 
