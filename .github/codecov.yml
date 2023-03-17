@@ -1,0 +1,5 @@
+comment: false
+ignore:
+  # Unit tests code artificially increases the coverage.
+  - "test/**/*"
+  - "test/*"

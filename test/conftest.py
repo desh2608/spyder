@@ -2,13 +2,7 @@ from collections import defaultdict
 
 import pytest
 
-__all__ = [
-    "ref_turns",
-    "hyp_turns",
-    "uem_turns",
-    "ref_rttm_lc",
-    "hyp_rttm_lc",
-]
+__all__ = ["ref_turns", "hyp_turns", "uem_turns"]
 
 
 @pytest.fixture(scope="module")
@@ -47,29 +41,3 @@ def uem_turns():
             end = float(parts[3])
             uem_turns[parts[0]].append((start, end))
     return uem_turns
-
-
-@pytest.fixture(scope="module")
-def ref_rttm_lc():
-    ref_rttm_lc = defaultdict(list)
-    with open("test/fixtures/ref_lc.rttm", "r") as f:
-        for line in f:
-            parts = line.strip().split()
-            spk = parts[7]
-            start = float(parts[3])
-            end = start + float(parts[4])
-            ref_rttm_lc[parts[1]].append((spk, start, end))
-    return ref_rttm_lc
-
-
-@pytest.fixture(scope="module")
-def hyp_rttm_lc():
-    hyp_rttm_lc = defaultdict(list)
-    with open("test/fixtures/hyp_lc.rttm", "r") as f:
-        for line in f:
-            parts = line.strip().split()
-            spk = parts[7]
-            start = float(parts[3])
-            end = start + float(parts[4])
-            hyp_rttm_lc[parts[1]].append((spk, start, end))
-    return hyp_rttm_lc
