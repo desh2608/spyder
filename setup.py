@@ -30,6 +30,16 @@ ext_modules = [
 long_description = open("README.md").read()
 
 install_requires = ["click>=7.0.0", "tabulate>=0.8.9"]
+tests_require = [
+    "pytest==7.1.3",
+    "pytest-forked==1.4.0",
+    "pytest-cov==4.0.0",
+    "flake8==5.0.4",
+    "coverage==6.5.0",
+    "black==22.3.0",
+    "isort==5.10.1",
+    "pre-commit>=2.17.0,<=2.19.0",
+]
 
 setup(
     name="spy-der",
@@ -48,5 +58,6 @@ setup(
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
     install_requires=install_requires,
+    extras_require={"tests": tests_require},
     entry_points={"console_scripts": ["spyder=spyder.der:compute_der_from_rttm"]},
 )
