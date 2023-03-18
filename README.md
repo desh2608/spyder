@@ -58,6 +58,8 @@ print(spyder.DER(ref, hyp, collar=0.2))
 metrics = spyder.DER(ref, hyp)
 print(f"Reference speaker map: {metrics.ref_map}")
 print(f"Hypothesis speaker map: {metrics.hyp_map}")
+# Reference speaker map: {'A': '0', 'B': '1'}
+# Hypothesis speaker map: {'1': '0', '2': '2', '3': '1'}
 ```
 
 ### Compute DER for multiple pairs of reference and hypothesis
