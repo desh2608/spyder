@@ -33,6 +33,7 @@ install_requires = ["click>=7.0.0", "tabulate>=0.8.9"]
 tests_require = [
     "pytest==7.1.3",
     "pytest-forked==1.4.0",
+    "pytest-xdist==2.5.0",
     "pytest-cov==4.0.0",
     "flake8==5.0.4",
     "coverage==6.5.0",
