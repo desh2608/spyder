@@ -6,9 +6,9 @@ name: unit_tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   unit_tests:
@@ -42,6 +42,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install wheel
+        pip install '.[tests]'
     - name: Test with pytest and coverage
       run: |
         pytest --cov --forked -n auto test

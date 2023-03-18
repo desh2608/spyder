@@ -1,4 +1,4 @@
-# spyder
+<h1 align="center">SPYDER</h1>
 
 A simple Python package for fast DER computation.
 
