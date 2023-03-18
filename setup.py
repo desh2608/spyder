@@ -29,10 +29,11 @@ ext_modules = [
 
 long_description = open("README.md").read()
 
-install_requires = ["click>=7.0.0", "tabulate>=0.8.9"]
+install_requires = ["click>=7.0.0", "tabulate>=0.8.9", "numpy>=1.18.1"]
 tests_require = [
     "pytest==7.1.3",
     "pytest-forked==1.4.0",
+    "pytest-xdist==2.5.0",
     "pytest-cov==4.0.0",
     "flake8==5.0.4",
     "coverage==6.5.0",
@@ -58,6 +59,6 @@ setup(
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
     install_requires=install_requires,
-    extras_require={"tests": tests_require},
+    extras_require={"tests": tests_require, "all": install_requires + tests_require},
     entry_points={"console_scripts": ["spyder=spyder.der:compute_der_from_rttm"]},
 )
