@@ -150,6 +150,7 @@ def DER(
     skip_missing=False,
     regions="all",
     collar=0.0,
+    print_speaker_map=False,
     verbose=False,
 ):
     """
@@ -190,7 +191,15 @@ def DER(
     if isinstance(ref, dict) and isinstance(hyp, dict):
         assert isinstance(uem, dict), "UEM must be dict if ref and hyp are dict"
         metrics = _DER_multi(
-            ref, hyp, uem, per_file, skip_missing, regions, collar, verbose
+            ref,
+            hyp,
+            uem,
+            per_file,
+            skip_missing,
+            regions,
+            collar,
+            print_speaker_map,
+            verbose,
         )
     elif np.ndim(ref[-1]) == 2 and np.ndim(hyp[-1]) == 2:
         # the first dimension is the number of utterances
@@ -213,6 +222,7 @@ def DER(
             skip_missing,
             regions,
             collar,
+            print_speaker_map,
             verbose,
         )
     elif np.ndim(ref[-1]) == 1 and np.ndim(hyp[-1]) == 1:
